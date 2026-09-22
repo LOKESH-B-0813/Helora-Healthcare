@@ -1,0 +1,89 @@
+{
+  "description": "Curated local knowledge documents for Medi-AI. These are educational help content ONLY and are explicitly NOT clinically validated.",
+  "documents": [
+    {
+      "id": "help-doc-visit-prep",
+      "title": "How to prepare for a doctor visit",
+      "topic": "help-seeking",
+      "specialty": "General Medicine",
+      "language": "all",
+      "effective_date": "2026-09-01",
+      "review_status": "draft",
+      "sources": [
+        {
+          "name": "Helora internal guidance (draft, not clinically validated)",
+          "version": "1.0",
+          "url": ""
+        }
+      ],
+      "keywords": [
+        "doctor visit", "prepare for appointment", "what to tell doctor",
+        "medical history", "symptoms list", "questions to ask doctor",
+        "help seeking", "before seeing a doctor"
+      ],
+      "sections": [
+        "Write down your main concern and when it started before the visit.",
+        "Note any medicines you currently take, their doses, and any allergies.",
+        "List questions you want to ask so you do not forget them during the consultation.",
+        "Bring relevant reports or prescriptions if you have them.",
+        "This is general planning guidance and is not medical advice."
+      ]
+    },
+    {
+      "id": "help-doc-symptom-description",
+      "title": "How to describe your symptoms clearly",
+      "topic": "symptom-description",
+      "specialty": "General Medicine",
+      "language": "all",
+      "effective_date": "2026-09-01",
+      "review_status": "draft",
+      "sources": [
+        {
+          "name": "Helora internal guidance (draft, not clinically validated)",
+          "version": "1.0",
+          "url": ""
+        }
+      ],
+      "keywords": [
+        "describe symptoms", "symptoms duration", "how long symptoms",
+        "symptom severity", "what makes it worse", "worse and better",
+        "onset", "describe pain"
+      ],
+      "sections": [
+        "Mention when the symptom started and whether it appeared suddenly.",
+        "Describe the severity (for example mild, moderate, severe) in your own words.",
+        "Note what makes it better or worse, such as food, rest or activity.",
+        "Mention any other changes you noticed at the same time.",
+        "Providing clear descriptions helps a clinician understand your situation; it does not replace a professional evaluation."
+      ]
+    },
+    {
+      "id": "help-doc-medication-safety",
+      "title": "Safe questions to discuss about medicine",
+      "topic": "medication-information",
+      "specialty": "General Medicine",
+      "language": "all",
+      "effective_date": "2026-09-01",
+      "review_status": "draft",
+      "sources": [
+        {
+          "name": "Helora internal guidance (draft, not clinically validated)",
+          "version": "1.0",
+          "url": ""
+        }
+      ],
+      "keywords": [
+        "medicine information", "medication", "dosage", "side effects",
+        "medicine with food", "take medicine", "interaction",
+        "discuss with pharmacist", "ask your doctor"
+      ],
+      "sections": [
+        "Medi-AI provides general educational information about medicines and never acts as a prescription engine.",
+        "Always confirm the medicine name, dose, and how to take it with a clinician or pharmacist.",
+        "Do not start, stop, or change any prescribed medicine without involving your clinician.",
+        "Ask your pharmacist about timing, food interactions, and possible side effects specific to your situation.",
+        "If you think you have taken too much medicine, seek help immediately - do not wait for an online response."
+      ]
+    }
+  ]
+}
