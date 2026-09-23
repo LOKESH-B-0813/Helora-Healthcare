@@ -1,0 +1,75 @@
+{
+    "doctors": [
+        {
+            "id": 1,
+            "name": "Dr. Sarah Wilson",
+            "specialization": "Cardiologist",
+            "email": "sarah.w@helora.com",
+            "password": "password",
+            "phone": "5551234567",
+            "status": "approved"
+        },
+        {
+            "id": 2,
+            "name": "Dr. John Smith",
+            "specialization": "Neurologist",
+            "email": "john.s@helora.com",
+            "password": "password",
+            "phone": "5559876543",
+            "status": "approved"
+        }
+    ],
+    "patients": [
+        {
+            "id": 101,
+            "name": "Alice Brown",
+            "age": 34,
+            "condition": "Flu",
+            "email": "alice@example.com",
+            "password": "password",
+            "phone": "9876543210",
+            "status": "approved"
+        },
+        {
+            "id": 102,
+            "name": "Robert Fox",
+            "age": 58,
+            "condition": "Hypertension",
+            "email": "robert@example.com",
+            "password": "password",
+            "phone": "1234567890",
+            "status": "approved"
+        }
+    ],
+    "admins": [
+        {
+            "id": 1,
+            "email": "lokesh16215@gmail.com",
+            "role": "Super Admin - Founder",
+            "protected": true
+        }
+    ],
+    "pending_doctors": [],
+    "pending_patients": [],
+    "contact_messages": [],
+    "reports": [
+        {
+            "id": 1,
+            "patientPhone": "9876543210",
+            "title": "Blood Test Analysis",
+            "date": "2025-12-10",
+            "doctor": "Dr. Sarah Wilson",
+            "fileUrl": "#"
+        },
+        {
+            "id": 2,
+            "patientPhone": "1234567890",
+            "title": "MRI Scan Output",
+            "date": "2026-01-15",
+            "doctor": "Dr. John Smith",
+            "fileUrl": "#"
+        }
+    ],
+    "prescriptions": [],
+    "appointments": []
+}
