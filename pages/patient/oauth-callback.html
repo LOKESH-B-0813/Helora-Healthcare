@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helora Patient OAuth</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <main class="auth-card-modern" style="max-width: 620px; margin: 12vh auto; text-align: center;">
+        <div class="section-title">
+            <h1>Completing Google sign-in</h1>
+            <p id="status-message">Please wait while we finish your patient sign-in.</p>
+        </div>
+        <div id="diagnostic-box" style="margin-top: 20px; padding: 16px; border: 1px solid #d0d5dd; border-radius: 12px; background: #f9fafb; text-align: left; font-size: 14px; line-height: 1.8; color: #1f2937;">
+            <div>OAuth callback started</div>
+            <div id="diagnostic-userid">userId present: false</div>
+            <div id="diagnostic-secret">secret present: false</div>
+            <div id="diagnostic-stage">Waiting for callback diagnostics...</div>
+            <div id="diagnostic-error" style="margin-top: 12px; color: #b42318; white-space: pre-wrap;"></div>
+        </div>
+        <button id="copy-diagnostics" type="button" style="margin-top: 18px; padding: 10px 16px; border-radius: 8px; border: 1px solid #d0d5dd; background: white; cursor: pointer;">Copy diagnostic information</button>
+    </main>
+
+    <script type="module">
+        import { appwriteAccount } from '../../js/appwrite-init.js?v=268';
+        import { continuePatientGoogleSession } from '../../js/auth.js?v=268';
+
+        let currentStage = 'callback initialization';
+
+        const statusEl = document.getElementById('status-message');
+        const stageEl = document.getElementById('diagnostic-stage');
+        const userIdEl = document.getElementById('diagnostic-userid');
+        const secretEl = document.getElementById('diagnostic-secret');
+        const errorEl = document.getElementById('diagnostic-error');
+        const copyButton = document.getElementById('copy-diagnostics');
+
+        function loadPatientEnsureDiagnostics() {
+            try {
+                const raw = sessionStorage.getItem('helora_patient_ensure_debug');
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        const patientEnsureDebug = loadPatientEnsureDiagnostics();
+        if (patientEnsureDebug) {
+            const info = [
+                'Patient session continuation started',
+                `Backend ensure request started`,
+                `Backend status: ${patientEnsureDebug.status || 'unknown'}`,
+                `Backend response role: ${patientEnsureDebug.role || 'missing'}`,
+                `Backend response allowed: ${Boolean(patientEnsureDebug.allowed)}`,
+                `Backend response profile: ${patientEnsureDebug.profilePresent ? 'present' : 'missing'}`,
+                patientEnsureDebug.safeError ? `Safe error message: ${patientEnsureDebug.safeError}` : ''
+            ].filter(Boolean).join('\n');
+            statusEl.textContent = 'Patient session continuation started';
+            stageEl.textContent = info;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const userId = params.get('userId');
+        const secret = params.get('secret');
+        const oauthError = params.get('error') || params.get('failure');
+
+        function setDiagnostic(stageText, isError = false) {
+            stageEl.textContent = stageText;
+            stageEl.style.color = isError ? '#b42318' : '#1f2937';
+        }
+
+        function showSafeError(error) {
+            const code = error?.code ?? 'unknown';
+            const type = error?.type ?? 'unknown';
+            const message = error?.message ?? String(error);
+            errorEl.textContent = `Error code: ${code}\nError type: ${type}\nError message: ${message}`;
+            errorEl.style.display = 'block';
+        }
+
+        function getSafeDiagnostics() {
+            return [
+                'OAuth callback started',
+                `userId present: ${Boolean(userId)}`,
+                `secret present: ${Boolean(secret)}`,
+                stageEl.textContent,
+                errorEl.textContent ? errorEl.textContent : 'No errors',
+            ].join('\n');
+        }
+
+        if (copyButton) {
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(getSafeDiagnostics());
+                    setDiagnostic('Copy diagnostic information: OK');
+                } catch (error) {
+                    setDiagnostic('Copy diagnostic information: unavailable');
+                }
+            });
+        }
+
+        userIdEl.textContent = `userId present: ${Boolean(userId)}`;
+        secretEl.textContent = `secret present: ${Boolean(secret)}`;
+        statusEl.textContent = 'OAuth callback started';
+
+        function withTimeout(operation, timeoutMs = 15000, timeoutMessage = 'operation timed out') {
+            let timerId;
+            const timeoutPromise = new Promise((_, reject) => {
+                timerId = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+            });
+            return Promise.race([
+                Promise.resolve().then(operation),
+                timeoutPromise,
+            ]).finally(() => {
+                clearTimeout(timerId);
+            });
+        }
+
+        try {
+            currentStage = 'reading OAuth parameters';
+            console.log('OAuth callback started');
+            console.log('userId present:', Boolean(userId));
+            console.log('secret present:', Boolean(secret));
+
+            if (oauthError) {
+                currentStage = 'validating OAuth parameters';
+                setDiagnostic('FAILED STAGE: validating OAuth parameters', true);
+                statusEl.textContent = 'FAILED STAGE: validating OAuth parameters';
+                showSafeError({ code: 'unknown', type: 'oauth_error', message: oauthError || 'Google sign-in failed.' });
+                throw new Error(oauthError || 'Google sign-in failed.');
+            }
+
+            if (!userId || !secret) {
+                currentStage = 'validating OAuth parameters';
+                setDiagnostic('FAILED STAGE: validating OAuth parameters', true);
+                statusEl.textContent = 'FAILED STAGE: validating OAuth parameters';
+                userIdEl.textContent = `userId present: ${Boolean(userId)}`;
+                secretEl.textContent = `secret present: ${Boolean(secret)}`;
+                showSafeError({ code: 'missing_params', type: 'oauth_callback', message: 'Missing userId or secret.' });
+                throw new Error('Missing userId or secret.');
+            }
+
+            console.log('OAuth parameters received successfully');
+            statusEl.textContent = 'OAuth parameters received successfully';
+
+            let existingUser = null;
+            currentStage = 'checking existing Appwrite session';
+            setDiagnostic('checking existing Appwrite session');
+            statusEl.textContent = 'checking existing Appwrite session';
+            try {
+                existingUser = await withTimeout(() => appwriteAccount.get(), 15000, 'existing session check timed out');
+            } catch (error) {
+                const statusCode = Number(error?.code ?? error?.status ?? 0);
+                const code = error?.code ?? 'unknown';
+                const type = error?.type ?? 'unknown';
+                const message = error?.message ?? String(error);
+                const isUnauthenticated = statusCode === 401 || String(type).toLowerCase().includes('unauthenticated') || String(message).toLowerCase().includes('unauthenticated') || String(message).toLowerCase().includes('not authenticated') || String(message).toLowerCase().includes('session is missing');
+                if (!isUnauthenticated) {
+                    currentStage = 'checking existing Appwrite session';
+                    setDiagnostic('FAILED STAGE: checking existing Appwrite session', true);
+                    statusEl.textContent = 'FAILED STAGE: checking existing Appwrite session';
+                    showSafeError({ code, type, message });
+                    throw error;
+                }
+                existingUser = null;
+            }
+
+            if (existingUser && existingUser.$id === userId) {
+                currentStage = 'using existing OAuth session';
+                setDiagnostic('using existing OAuth session');
+                statusEl.textContent = 'using existing OAuth session';
+            } else if (existingUser && existingUser.$id !== userId) {
+                currentStage = 'deleting conflicting Appwrite session';
+                setDiagnostic('deleting conflicting Appwrite session');
+                statusEl.textContent = 'deleting conflicting Appwrite session';
+                await withTimeout(() => appwriteAccount.deleteSession('current'), 15000, 'deleteSession timed out');
+                currentStage = 'creating Appwrite OAuth session';
+                setDiagnostic('createSession: STARTED');
+                statusEl.textContent = 'createSession: STARTED';
+                await withTimeout(() => appwriteAccount.createSession({ userId, secret }), 15000, 'createSession timed out');
+                currentStage = 'creating Appwrite OAuth session';
+                setDiagnostic('createSession: COMPLETED');
+                statusEl.textContent = 'createSession: COMPLETED';
+            } else {
+                currentStage = 'creating Appwrite OAuth session';
+                setDiagnostic('createSession: STARTED');
+                statusEl.textContent = 'createSession: STARTED';
+                await withTimeout(() => appwriteAccount.createSession({ userId, secret }), 15000, 'createSession timed out');
+                currentStage = 'creating Appwrite OAuth session';
+                setDiagnostic('createSession: COMPLETED');
+                statusEl.textContent = 'createSession: COMPLETED';
+            }
+
+            currentStage = 'removing OAuth parameters from URL';
+            setDiagnostic('removing OAuth parameters from URL');
+            statusEl.textContent = 'removing OAuth parameters from URL';
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+
+            currentStage = 'getting authenticated Appwrite account';
+            setDiagnostic('account.get: STARTED');
+            statusEl.textContent = 'account.get: STARTED';
+            const accountUser = await withTimeout(() => appwriteAccount.get(), 15000, 'account.get timed out');
+            currentStage = 'getting authenticated Appwrite account';
+            setDiagnostic('account.get: COMPLETED');
+            statusEl.textContent = 'account.get: COMPLETED';
+
+            if (!accountUser) {
+                throw new Error('Appwrite session could not be confirmed.');
+            }
+
+            currentStage = 'continuing patient Google session';
+            setDiagnostic('continuePatientGoogleSession: STARTED');
+            statusEl.textContent = 'continuePatientGoogleSession: STARTED';
+            await continuePatientGoogleSession(accountUser);
+            currentStage = 'continuing patient Google session';
+            setDiagnostic('continuePatientGoogleSession: COMPLETED');
+            statusEl.textContent = 'continuePatientGoogleSession: COMPLETED';
+        } catch (error) {
+            const code = error?.code ?? 'unknown';
+            const type = error?.type ?? 'unknown';
+            const message = error?.message ?? String(error);
+            setDiagnostic(`FAILED STAGE: ${currentStage}`, true);
+            statusEl.textContent = `FAILED STAGE: ${currentStage}`;
+            showSafeError({ code, type, message });
+        }
+    </script>
+</body>
+</html>
