@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helora - Advanced Hospital Management</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="js/admin-service.js"></script>
+    <style>
+        /* Interactive Enhancements */
+        .portal-main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            width: 100%;
+        }
+
+        .portal-box {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem 1rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .portal-box:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 25px -5px rgba(13, 148, 136, 0.2);
+            background: white;
+        }
+
+        .portal-box h3 {
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.25rem;
+        }
+
+        .portal-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .hero {
+            padding-top: 4rem;
+            padding-bottom: 8rem;
+            background: radial-gradient(circle at top center, rgba(13, 148, 136, 0.05), transparent 70%);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero h1 {
+            max-width: 800px;
+            margin: 0 auto 1.5rem auto;
+            font-size: 4rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            font-size: 1.25rem;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floatParticle 20s infinite linear;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+            }
+        }
+
+        @keyframes pulseLive {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Particles -->
+    <div
+        style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: -1; overflow: hidden;">
+        <div class="particle" style="width: 20px; height: 20px; left: 10%; top: 100%; animation-duration: 15s;"></div>
+        <div class="particle"
+            style="width: 30px; height: 30px; left: 30%; top: 100%; animation-duration: 25s; background: var(--secondary-color);">
+        </div>
+        <div class="particle"
+            style="width: 15px; height: 15px; left: 70%; top: 100%; animation-duration: 18s; background: var(--accent-color);">
+        </div>
+        <div class="particle" style="width: 40px; height: 40px; left: 90%; top: 100%; animation-duration: 30s;"></div>
+    </div>
+
+    <!-- Quote -->
+    <div class="quote-bar">"Medicines cure diseases, but only doctors can cure patients." — Carl Jung</div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-img">
+                        <img src="assets/logo.png" alt="Helora Logo"
+                            style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+
+                    <span>Helora</span>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" class="active">Home</a>
+                    <a href="pages/services/find-doctors.html">Find Doctors</a>
+                    <a href="pages/services/consultation.html">Consultation</a>
+                    <a href="pages/services/view-reports.html">Reports</a>
+                    <a href="pages/services/pharmacy.html">Pharmacy</a>
+                    <a href="pages/medi-ai/chat.html">Medi-AI</a>
+                </div>
+                <!-- Login removed from header since portals are now MAIN focus -->
+                <button class="btn btn-primary" onclick="window.location.href='pages/services/appointments.html'">Book
+                    Appt</button>
+            </nav>
+        </div>
+    </header>
+
+
+    <main>
+        <!-- Hero with INTEGRATED PORTALS -->
+        <section class="hero container">
+            <h1>Advanced Healthcare<br><span style="color: var(--primary-color);">Simpler Access.</span></h1>
+            <p>Welcome to Helora. The most advanced hospital management system. Select your portal to begin.</p>
+
+            <!-- PROMINENT PORTALS GRID -->
+            <div class="portal-main-grid">
+                <!-- Patient -->
+                <div class="portal-box" onclick="window.location.href='pages/patient/login.html'">
+                    <div
+                        style="background: #eff6ff; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <ion-icon name="person" style="font-size: 2.5rem; color: #3b82f6;"></ion-icon>
+                    </div>
+                    <h3>Patient Portal</h3>
+                    <p>Appointments, Prescriptions & Records</p>
+                </div>
+
+                <!-- Doctor -->
+                <div class="portal-box" onclick="window.location.href='pages/doctor/login.html'">
+                    <div
+                        style="background: #f0fdf4; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <ion-icon name="medkit" style="font-size: 2.5rem; color: #22c55e;"></ion-icon>
+                    </div>
+                    <h3>Doctor Portal</h3>
+                    <p>Manage Schedules & Consultations</p>
+                </div>
+
+                <!-- Admin -->
+                <div class="portal-box" onclick="window.location.href='pages/admin/login.html'">
+                    <div
+                        style="background: #fef2f2; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <ion-icon name="shield-checkmark" style="font-size: 2.5rem; color: #ef4444;"></ion-icon>
+                    </div>
+                    <h3>Admin Portal</h3>
+                    <p>System Control & Management</p>
+                </div>
+
+                <!-- Reports (Direct Access) -->
+                <div class="portal-box" onclick="window.location.href='pages/services/view-reports.html'">
+                    <div
+                        style="background: #fff7ed; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <ion-icon name="document-lock" style="font-size: 2.5rem; color: #f97316;"></ion-icon>
+                    </div>
+                    <h3>View Reports</h3>
+                    <p>Secure OTP Access to Records</p>
+                </div>
+
+                <!-- AI Assistant (New) -->
+                <div class="portal-box" onclick="window.location.href='pages/medi-ai/chat.html'">
+                    <div
+                        style="background: #f3e8ff; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <ion-icon name="sparkles" style="font-size: 2.5rem; color: #9333ea;"></ion-icon>
+                    </div>
+                    <h3>AI Assistant</h3>
+                    <p>24/7 Smart Health Guidance</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section: Trusted By -->
+        <section class="spacing-xl"
+            style="background: white; padding: 2.5rem 0; text-align: center; border-bottom: 1px solid var(--border-color);">
+            <div class="container">
+                <p
+                    style="color: var(--text-secondary); font-weight: 500; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;">
+                    Trusted by Leading Healthcare Providers</p>
+                <div
+                    style="display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap; opacity: 0.5; filter: grayscale(100%);">
+                    <h3
+                        style="font-family: var(--font-heading); color: var(--text-primary); margin:0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <ion-icon name="medkit"></ion-icon> MedCore
+                    </h3>
+                    <h3
+                        style="font-family: var(--font-heading); color: var(--text-primary); margin:0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <ion-icon name="fitness"></ion-icon> HealthPlus
+                    </h3>
+                    <h3
+                        style="font-family: var(--font-heading); color: var(--text-primary); margin:0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <ion-icon name="pulse"></ion-icon> CareLink
+                    </h3>
+                    <h3
+                        style="font-family: var(--font-heading); color: var(--text-primary); margin:0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <ion-icon name="globe"></ion-icon> GlobalMed
+                    </h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section: Why Helora -->
+        <section class="spacing-xl" style="padding-top: 2rem;">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Why Choose Helora?</h2>
+                    <p>Designed for humans, powered by advanced technology.</p>
+                </div>
+                <div class="grid-3">
+                    <div class="portal-card" style="text-align: left;">
+                        <ion-icon name="heart-half"
+                            style="font-size: 2.5rem; color: var(--accent-color); margin-bottom: 1rem;"></ion-icon>
+                        <h3 style="margin-bottom: 0.5rem;">Patient-Centric Care</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Experience healthcare that revolves
+                            around you. Seamless appointments, easy record access, and continuous support.</p>
+                    </div>
+                    <div class="portal-card" style="text-align: left;">
+                        <ion-icon name="shield-checkmark"
+                            style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></ion-icon>
+                        <h3 style="margin-bottom: 0.5rem;">Bank-Level Security</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Your health data is protected with
+                            state-of-the-art encryption, ensuring privacy and HIPAA compliance at all times.</p>
+                    </div>
+                    <div class="portal-card" style="text-align: left;">
+                        <ion-icon name="flash"
+                            style="font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 1rem;"></ion-icon>
+                        <h3 style="margin-bottom: 0.5rem;">Lightning Fast</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Zero waiting times for digital
+                            records. Doctors and patients can access critical information instantaneously.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Restructured News & Updates Section -->
+        <section class="spacing-xl" style="background: rgba(13, 148, 136, 0.03); padding: 4rem 0;">
+            <div class="container">
+                <div style="display: flex; flex-wrap: wrap; gap: 4rem; align-items: flex-start;">
+                    <!-- Left: Mission / How it works -->
+                    <div style="flex: 1; min-width: 300px;">
+                        <h2
+                            style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary); font-family: var(--font-heading); font-weight: 800;">
+                            Our Mission</h2>
+                        <p
+                            style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 3rem;">
+                            To democratize access to premium healthcare by building intelligent, human-centered systems
+                            that connect patients with the care they deserve. We believe technology should heal, not
+                            hinder.
+                        </p>
+
+                        <h3
+                            style="font-size: 1.5rem; margin-bottom: 1.5rem; font-family: var(--font-heading); font-weight: 700;">
+                            How It Works</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div
+                                    style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    1</div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.25rem;">Select Your Portal</h4>
+                                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;">
+                                        Choose Patient, Doctor, or Admin to access your customized dashboard.</p>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div
+                                    style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    2</div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.25rem;">Secure Login</h4>
+                                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;">
+                                        Authenticate using our secure, encrypted login system ensuring your privacy.</p>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div
+                                    style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    3</div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.25rem;">Manage Health</h4>
+                                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;">Book
+                                        appointments, view records, or manage hospital resources seamlessly.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Right: Dynamic News -->
+                    <div
+                        style="flex: 1; min-width: 300px; background: white; padding: 2.5rem; border-radius: 1.5rem; box-shadow: var(--shadow-md);">
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                            <h3
+                                style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-heading); font-weight: 700;">
+                                <ion-icon name="newspaper-outline" style="color: var(--primary-color);"></ion-icon>
+                                Latest Updates
+                            </h3>
+                            <span
+                                style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
+                                <span
+                                    style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulseLive 2s infinite;"></span>
+                                Live Focus
+                            </span>
+                        </div>
+                        <div id="dynamic-news-container">
+                            <div class="dynamic-news-item">
+                                <span
+                                    style="font-size: 0.75rem; font-weight: 700; color: var(--primary-color); text-transform: uppercase;">System</span>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; font-weight: 500;">Loading latest
+                                    healthcare updates...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>Helora</h3>
+                    <p>Advanced healthcare management system designed for efficiency and care.</p>
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 1.5rem;">
+                        <ion-icon name="logo-facebook"></ion-icon>
+                        <ion-icon name="logo-twitter"></ion-icon>
+                        <ion-icon name="logo-instagram"></ion-icon>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="pages/services/find-doctors.html">Find Doctors</a></li>
+                        <li><a href="pages/services/appointments.html">Book Appointment</a></li>
+                        <li><a href="pages/medi-ai/chat.html">AI Assistant</a></li>
+                        <li><a href="pages/admin/login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Contact Us</h3>
+                    <form class="contact-form" id="contact-form">
+                        <input type="text" id="contact-name" placeholder="Your Name" required>
+                        <input type="email" id="contact-email" placeholder="Your Email" required>
+                        <textarea id="contact-msg" rows="2" placeholder="Message"></textarea>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 Helora Hospital Management System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/ui-enhancements.js"></script>
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const msg = document.getElementById('contact-msg').value;
+
+            // Send to Admin
+            AdminService.addContactMessage({ name, email, msg });
+            alert('Your message has been sent to the Admin team!');
+            e.target.reset();
+        });
+    </script>
+</body>
+
+</html>
