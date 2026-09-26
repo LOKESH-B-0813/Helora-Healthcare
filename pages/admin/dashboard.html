@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard - Helora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/admin-dashboard.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script type="module" src="../../js/admin-dashboard.js"></script>
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <a class="admin-brand logo" href="../../index.html">
+                <img src="../../assets/logo.png" alt="Helora logo">
+                <span>Helora Admin</span>
+            </a>
+
+            <nav class="admin-nav" aria-label="Admin navigation">
+                <span class="nav-section">Workspace</span>
+                <a class="active" href="dashboard.html"><ion-icon name="grid-outline"></ion-icon>Dashboard</a>
+                <a href="?view=patients"><ion-icon name="people-outline"></ion-icon>Patients</a>
+                <a href="?view=doctors"><ion-icon name="medkit-outline"></ion-icon>Doctors</a>
+                <a href="?view=administrators"><ion-icon name="shield-checkmark-outline"></ion-icon>Administrators</a>
+                <a href="?view=employees"><ion-icon name="briefcase-outline"></ion-icon>Employees</a>
+                <span class="nav-section">Operations</span>
+                <a href="?view=appointments"><ion-icon name="calendar-outline"></ion-icon>Appointments</a>
+                <a href="?view=reports"><ion-icon name="document-text-outline"></ion-icon>Medical Reports</a>
+                <a href="?view=pharmacy"><ion-icon name="medkit-outline"></ion-icon>Pharmacy</a>
+                <a href="?view=insurance"><ion-icon name="card-outline"></ion-icon>Insurance</a>
+                <a href="?view=notifications"><ion-icon name="notifications-outline"></ion-icon>Notifications</a>
+                <span class="nav-section">Governance</span>
+                <a href="?view=audit"><ion-icon name="list-outline"></ion-icon>Audit Logs</a>
+                <a href="?view=settings"><ion-icon name="settings-outline"></ion-icon>Settings</a>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <button class="logout-button" id="logout-button" type="button"><ion-icon name="log-out-outline"></ion-icon> Logout</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <span class="admin-kicker">Super Admin Console</span>
+                    <h1 class="admin-title">System overview</h1>
+                    <p class="admin-subtitle">Live information from the Helora Appwrite project.</p>
+                </div>
+                <div class="admin-identity" aria-label="Signed in administrator">
+                    <div>
+                        <strong id="identity-name">Loading identity...</strong>
+                        <span id="identity-role">Verifying access</span>
+                    </div>
+                    <div class="admin-avatar" aria-hidden="true">SA</div>
+                </div>
+            </header>
+
+            <div id="dashboard-error" class="dashboard-error" hidden role="alert"></div>
+            <div id="dashboard-loading" class="admin-card" aria-live="polite">Loading live dashboard data...</div>
+
+            <section id="management-view" class="admin-card" hidden>
+                <div class="admin-card-header">
+                    <h2 id="management-title">User management</h2>
+                    <span id="management-count"></span>
+                </div>
+                <div id="management-state" class="admin-subtitle">Loading records...</div>
+                <button id="create-user-button" class="btn btn-primary" type="button" hidden>Add user</button>
+                <form id="create-user-form" class="admin-create-form" hidden>
+                    <input name="full_name" placeholder="Full name" required>
+                    <input name="email" type="email" placeholder="Email" required>
+                    <input name="password" type="password" placeholder="Temporary password (8+ characters)" minlength="8" required>
+                    <select name="role" required><option value="patient">Patient</option><option value="doctor">Doctor</option><option value="employee">Employee</option><option value="admin">Administrator</option></select>
+                    <input name="specialization" placeholder="Doctor specialization (if applicable)">
+                    <input name="department" placeholder="Employee department (if applicable)">
+                    <input name="designation" placeholder="Employee designation (if applicable)">
+                    <button class="btn btn-primary" type="submit">Create account</button>
+                    <span id="create-user-status" role="status"></span>
+                </form>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table" id="management-table" hidden>
+                        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Status</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="admin-grid" aria-label="System totals">
+                <article class="admin-card"><span class="stat-label">Total Patients</span><strong class="stat-value" id="total-patients">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Total Doctors</span><strong class="stat-value" id="total-doctors">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Administrators</span><strong class="stat-value" id="total-admins">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Employees</span><strong class="stat-value" id="total-employees">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Appointments</span><strong class="stat-value" id="total-appointments">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Active Users</span><strong class="stat-value" id="active-users">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Medical Reports</span><strong class="stat-value" id="total-medical-reports">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Pharmacy Records</span><strong class="stat-value" id="total-pharmacy-records">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Insurance Records</span><strong class="stat-value" id="total-insurance-records">--</strong></article>
+                <article class="admin-card"><span class="stat-label">Notifications</span><strong class="stat-value" id="total-notifications">--</strong></article>
+            </section>
+
+            <section class="admin-columns">
+                <article class="admin-card">
+                    <div class="admin-card-header"><h2>Recent activity</h2><span>Existing user records</span></div>
+                    <ul id="recent-activity" class="activity-list"><li class="empty-state">Loading activity...</li></ul>
+                </article>
+                <article class="admin-card">
+                    <div class="admin-card-header"><h2>User overview</h2><span>Role distribution</span></div>
+                    <ul id="role-distribution" class="role-list"><li class="empty-state">Loading roles...</li></ul>
+                </article>
+            </section>
+
+            <section class="admin-columns">
+                <article class="admin-card">
+                    <div class="admin-card-header"><h2>Appointment overview</h2><span id="appointment-note">Checking availability</span></div>
+                    <p class="admin-subtitle">Only records from a configured Appwrite appointments table are shown here.</p>
+                </article>
+                <article class="admin-card">
+                    <div class="admin-card-header"><h2>System status</h2><span>Live checks</span></div>
+                    <ul class="status-list">
+                        <li><span>Backend</span><span id="status-backend">Checking</span></li>
+                        <li><span>Appwrite</span><span id="status-appwrite">Checking</span></li>
+                        <li><span>Database</span><span id="status-database">Checking</span></li>
+                        <li><span>Storage</span><span id="status-storage">Checking</span></li>
+                    </ul>
+                </article>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
