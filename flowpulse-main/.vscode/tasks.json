@@ -1,0 +1,72 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install mobile dependencies",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"mobile",
+				"install",
+				"--no-audit",
+				"--no-fund"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Launch FlowPulse on Android",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"--prefix",
+				"mobile",
+				"expo",
+				"start",
+				"--android"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Android device",
+			"type": "shell",
+			"command": "adb",
+			"args": [
+				"devices",
+				"-l"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build FlowPulse mobile",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"mobile",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "Launch FlowPulse mobile on Android",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"mobile",
+				"run",
+				"android"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
