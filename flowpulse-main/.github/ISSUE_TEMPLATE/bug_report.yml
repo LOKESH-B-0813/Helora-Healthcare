@@ -1,0 +1,47 @@
+name: 🐛 Bug Report
+description: File a bug report to help us improve FlowPulse
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue with FlowPulse!
+  - type: input
+    id: version
+    attributes:
+      label: FlowPulse Version / Module
+      description: Which part of FlowPulse is affected (e.g., Web Command Center, Mobile Patient App, Queue Engine)?
+      placeholder: e.g. Web App / Smart Queue Engine
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Navigate to 'Staff -> Live Queues'
+        2. Trigger 'Lab Analyzer Failure' simulation scenario
+        3. Observe the timeline forecast calculation
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Logs
+      description: If applicable, add screenshots or console output to help explain your problem.
