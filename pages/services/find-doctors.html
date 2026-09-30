@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Doctors - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Helora Specialists</div>
+                <div class="nav-links">
+                    <a href="../../index.html">Home</a>
+                    <a href="appointments.html">Book Appointment</a>
+                    <a href="../medi-ai/chat.html">Medi-AI</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem 0;">
+        <div id="medi-ai-back" style="display: none; margin-bottom: 0.5rem;">
+            <a class="btn btn-outline" href="../medi-ai/chat.html" id="medi-ai-back-link">← Back to Medi-AI</a>
+        </div>
+        <div id="patient-back" style="display: none; margin-bottom: 0.5rem;">
+            <a class="btn btn-outline" href="../patient/dashboard.html" id="patient-back-link">← Back to Patient Dashboard</a>
+        </div>
+        <div class="section-title" style="text-align: left; margin-bottom: 2rem;">
+            <h2>Our Specialists</h2>
+            <p>Expert care from leading professionals.</p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" data-filter="All">All</button>
+            <button class="btn btn-outline" data-filter="Cardiology">Cardiology</button>
+            <button class="btn btn-outline" data-filter="Neurology">Neurology</button>
+            <button class="btn btn-outline" data-filter="Pediatrics">Pediatrics</button>
+            <button class="btn btn-outline" data-filter="Dermatology">Dermatology</button>
+            <button class="btn btn-outline" data-filter="General Medicine">General Medicine</button>
+            <button class="btn btn-outline" data-filter="General Physician">General Physician</button>
+            <button class="btn btn-outline" data-filter="Pulmonology">Pulmonology</button>
+            <button class="btn btn-outline" data-filter="Ophthalmology">Ophthalmology</button>
+            <button class="btn btn-outline" data-filter="Otorhinolaryngology">ENT</button>
+            <button class="btn btn-outline" data-filter="Gastroenterology">Gastroenterology</button>
+            <button class="btn btn-outline" data-filter="Orthopedics">Orthopedics</button>
+            <button class="btn btn-outline" data-filter="Urology / Nephrology">Urology / Nephrology</button>
+            <button class="btn btn-outline" data-filter="Endocrinology">Endocrinology</button>
+            <button class="btn btn-outline" data-filter="Gynecology">Gynecology</button>
+            <button class="btn btn-outline" data-filter="Dental / Maxillofacial">Dental</button>
+            <button class="btn btn-outline" data-filter="Psychiatry / Mental Health">Psychiatry</button>
+        </div>
+
+        <div class="grid-3">
+            <!-- Doctor 1 -->
+            <div class="glass-panel" data-specialty="Cardiology" style="text-align: center;">
+                <div
+                    style="width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    👨‍⚕️</div>
+                <h3>Dr. John Smith</h3>
+                <p style="color: var(--primary-color); font-weight: 500;">Cardiologist</p>
+                <p style="color: var(--text-secondary); margin: 1rem 0;">15+ Years Experience. Specialist in heart
+                    rhythm disorders.</p>
+                <button class="btn btn-primary" onclick="window.location.href='appointments.html'">Book
+                    Appointment</button>
+            </div>
+
+            <!-- Doctor 2 -->
+            <div class="glass-panel" data-specialty="Neurology" style="text-align: center;">
+                <div
+                    style="width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    👩‍⚕️</div>
+                <h3>Dr. Emily White</h3>
+                <p style="color: var(--primary-color); font-weight: 500;">Neurologist</p>
+                <p style="color: var(--text-secondary); margin: 1rem 0;">10+ Years Experience. Expert in migraine and
+                    stroke care.</p>
+                <button class="btn btn-primary" onclick="window.location.href='appointments.html'">Book
+                    Appointment</button>
+            </div>
+
+            <!-- Doctor 3 -->
+            <div class="glass-panel" data-specialty="Pediatrics" style="text-align: center;">
+                <div
+                    style="width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    👨‍⚕️</div>
+                <h3>Dr. Alan Grant</h3>
+                <p style="color: var(--primary-color); font-weight: 500;">Pediatrician</p>
+                <p style="color: var(--text-secondary); margin: 1rem 0;">12+ Years Experience. Dedicated to child
+                    healthcare.</p>
+                <button class="btn btn-primary" onclick="window.location.href='appointments.html'">Book
+                    Appointment</button>
+            </div>
+        </div>
+    </main>
+    <script src="../../js/script.js"></script>
+    <script>
+        (function () {
+            var chips = Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
+            var cards = Array.prototype.slice.call(document.querySelectorAll('.glass-panel[data-specialty]'));
+            var activeChip = null;
+
+            function key(label) {
+                return (label || '').toLowerCase().replace(/[^a-z]/g, '');
+            }
+
+            function setActive(chip) {
+                chips.forEach(function (c) {
+                    c.classList.toggle('btn-primary', c === chip);
+                    c.classList.toggle('btn-outline', c !== chip);
+                });
+                activeChip = chip;
+            }
+
+            function applyFilter(label) {
+                var term = key(label);
+                cards.forEach(function (card) {
+                    var show = !term || key(card.getAttribute('data-specialty')).indexOf(term) !== -1;
+                    card.style.display = show ? '' : 'none';
+                });
+            }
+
+            function selectByLabel(label) {
+                var match = chips.find(function (c) { return key(c.getAttribute('data-filter')) === key(label); });
+                setActive(match || chips[0]);
+                applyFilter(match ? match.getAttribute('data-filter') : '');
+            }
+
+            chips.forEach(function (chip) {
+                chip.addEventListener('click', function () {
+                    setActive(chip);
+                    applyFilter(chip.getAttribute('data-filter'));
+                });
+            });
+
+            var params = new URLSearchParams(window.location.search);
+            var requested = params.get('specialty') || params.get('specialization') || '';
+
+            // When navigated here from Medi-AI, offer a back link that
+            // restores the exact conversation. Direct visitors never see it.
+            var fromMediAI = params.get('from') === 'medi-ai';
+            var conversationId = params.get('conversation_id');
+            var lang = params.get('lang');
+            if (fromMediAI && conversationId) {
+                var backBox = document.getElementById('medi-ai-back');
+                var backLink = document.getElementById('medi-ai-back-link');
+                var backParams = new URLSearchParams();
+                backParams.set('back', '1');
+                backParams.set('conversation_id', conversationId);
+                if (lang) backParams.set('lang', lang);
+                backLink.href = '../medi-ai/chat.html?' + backParams.toString();
+                backLink.setAttribute('aria-label', 'Return to your Medi-AI conversation');
+                backBox.style.display = '';
+            }
+
+            // When navigated here from the Patient Portal, offer an explicit
+            // back link to the patient dashboard (never browser history).
+            var fromPatient = params.get('from') === 'patient';
+            if (fromPatient) {
+                var patientBox = document.getElementById('patient-back');
+                var patientLink = document.getElementById('patient-back-link');
+                var dashboardHref = '../patient/dashboard.html';
+                if (params.get('demo') === '1') dashboardHref += '?demo=1';
+                patientLink.href = dashboardHref;
+                patientLink.setAttribute('aria-label', 'Return to your patient dashboard');
+                patientBox.style.display = '';
+            }
+
+            selectByLabel(requested);
+        })();
+    </script>
+</body>
+
+</html>
