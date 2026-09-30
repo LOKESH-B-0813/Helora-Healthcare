@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Portal - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Helora Insurance</div>
+                <div class="nav-links">
+                    <a href="../../index.html">Home</a>
+                    <a href="../patient/login.html">Patient Login</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 4rem 0;">
+        <div class="section-title">
+            <h2>My Insurance</h2>
+            <p>Your insurance records from the authenticated Helora patient profile.</p>
+        </div>
+        <p id="insurance-error" role="alert" hidden></p>
+        <div id="insurance-list" class="record-list"><p class="record-muted">Loading insurance records...</p></div>
+    </main>
+    <script type="module">
+        import { formatDate } from '../../js/patient-portal.js';
+        import { requirePatientDataset } from '../../js/patient-portal.js';
+
+        const list = document.getElementById('insurance-list');
+        const error = document.getElementById('insurance-error');
+        const render = (rows) => {
+            list.replaceChildren();
+            if (!rows.length) {
+                const empty = document.createElement('p');
+                empty.className = 'record-muted';
+                empty.textContent = 'No insurance records are available.';
+                list.appendChild(empty);
+                return;
+            }
+            rows.forEach((row) => {
+                const item = document.createElement('article');
+                item.className = 'glass-panel';
+                [['Provider', row.provider], ['Policy', row.policy_number], ['Plan', row.plan_name], ['Status', row.status], ['Valid until', formatDate(row.valid_until)]].forEach(([label, value]) => {
+                    if (value == null || value === '') return;
+                    const field = document.createElement('p');
+                    const strong = document.createElement('strong');
+                    strong.textContent = `${label}: `;
+                    field.append(strong, String(value));
+                    item.appendChild(field);
+                });
+                list.appendChild(item);
+            });
+        };
+        requirePatientDataset().then(({ dataset } = {}) => render(dataset?.insurance || [])).catch((loadError) => {
+            error.hidden = false;
+            error.textContent = loadError.message || 'Unable to load insurance records.';
+            list.replaceChildren();
+            const retry = document.createElement('button');
+            retry.className = 'btn btn-outline';
+            retry.textContent = 'Retry';
+            retry.addEventListener('click', () => window.location.reload());
+            list.appendChild(retry);
+        });
+    </script>
+</body>
+
+</html>
