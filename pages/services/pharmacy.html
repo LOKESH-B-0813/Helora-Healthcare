@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Pharmacy - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Helora Pharmacy</div>
+                <div class="nav-links">
+                    <a href="../../index.html">Home</a>
+                    <a href="../patient/login.html">My Orders</a>
+                </div>
+                <button class="btn btn-primary">Cart (0)</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem 0;">
+        <div class="section-title">
+            <h2>My Pharmacy Records</h2>
+            <p>Dispensing and prescription-linked pharmacy records for your account.</p>
+        </div>
+        <p id="pharmacy-error" role="alert" hidden></p>
+        <div id="pharmacy-list" class="record-list"><p class="record-muted">Loading pharmacy records...</p></div>
+    </main>
+    <script type="module">
+        import { requirePatientDataset } from '../../js/patient-portal.js';
+        const list = document.getElementById('pharmacy-list');
+        const error = document.getElementById('pharmacy-error');
+        requirePatientDataset().then(({ dataset } = {}) => {
+            const rows = dataset?.pharmacy || [];
+            list.replaceChildren();
+            if (!rows.length) {
+                const empty = document.createElement('p');
+                empty.className = 'record-muted';
+                empty.textContent = 'No pharmacy records are available.';
+                list.appendChild(empty);
+                return;
+            }
+            rows.forEach((row) => {
+                const item = document.createElement('article');
+                item.className = 'glass-panel';
+                item.textContent = `${row.medicine_name || 'Medicine'} · Quantity: ${row.quantity ?? '-'} · Status: ${row.status || '-'}`;
+                list.appendChild(item);
+            });
+        }).catch((loadError) => {
+            error.hidden = false;
+            error.textContent = loadError.message || 'Unable to load pharmacy records.';
+            list.replaceChildren();
+            const retry = document.createElement('button');
+            retry.className = 'btn btn-outline';
+            retry.textContent = 'Retry';
+            retry.addEventListener('click', () => window.location.reload());
+            list.appendChild(retry);
+        });
+    </script>
+</body>
+
+</html>
