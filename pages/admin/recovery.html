@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Admin Password - Helora</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <main class="auth-card-modern" style="max-width: 460px; margin: 8vh auto;">
+        <div class="section-title">
+            <h1>Reset Admin Password</h1>
+            <p>Choose a new password for your Helora account.</p>
+        </div>
+        <form id="recovery-form" novalidate>
+            <div class="form-group">
+                <label for="new-password">New password</label>
+                <input id="new-password" type="password" minlength="8" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm password</label>
+                <input id="confirm-password" type="password" minlength="8" required autocomplete="new-password">
+            </div>
+            <button class="btn btn-primary" type="submit" style="width:100%;">Update password</button>
+            <p id="recovery-status" role="status" aria-live="polite" style="display:none; margin-top:1rem;"></p>
+        </form>
+        <p style="text-align:center; margin-top:1.5rem;"><a href="login.html">Back to Admin Login</a></p>
+    </main>
+    <script type="module">
+        import { appwriteAccount } from '../../js/appwrite-init.js?v=262';
+
+        const params = new URLSearchParams(window.location.search);
+        const userId = params.get('userId');
+        const secret = params.get('secret');
+        const form = document.getElementById('recovery-form');
+        const status = document.getElementById('recovery-status');
+        const button = form.querySelector('button');
+
+        function showStatus(message, error = true) {
+            status.textContent = message;
+            status.style.display = 'block';
+           
+            status.style.color = error ? '#b42318' : 'var(--primary-color)';
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const password = document.getElementById('new-password').value;
+            const confirmation = document.getElementById('confirm-password').value;
+            if (!userId || !secret) return showStatus('This recovery link is incomplete or expired.');
+            if (password.length < 8) return showStatus('Password must be at least 8 characters.');
+            if (password !== confirmation) return showStatus('Passwords do not match.');
+
+            button.disabled = true;
+            button.textContent = 'Updating...';
+            try {
+                await appwriteAccount.updateRecovery(userId, secret, password, confirmation);
+                showStatus('Password updated. You can now sign in.', false);
+                form.reset();
+            } catch (error) {
+                console.error('Appwrite recovery completion failed:', error);
+                showStatus(error.message || 'Unable to update the password.');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Update password';
+            }
+        });
+    </script>
+</body>
+</html>
