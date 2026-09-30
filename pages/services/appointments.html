@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Helora Appointments</div>
+                <div class="nav-links">
+                    <a href="../../index.html">Home</a>
+                    <a href="find-doctors.html">Find Doctors</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 4rem 0;">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <div class="glass-panel">
+                <h2 style="margin-bottom: 2rem; text-align: center;">Schedule an Appointment</h2>
+
+                <form id="appointment-form">
+                    <div class="form-group">
+                        <label>Specialization</label>
+                        <select id="spec"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;">
+                            <option value="">All specialties</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preferred Doctor</label>
+                        <select id="doc" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;">
+                            <option value="">Loading doctors...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Time Slot</label>
+                        <select id="slot"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;">
+                            <option>09:00 AM - 10:00 AM</option>
+                            <option>10:00 AM - 11:00 AM</option>
+                            <option>11:00 AM - 12:00 PM</option>
+                            <option>02:00 PM - 03:00 PM</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reason for Visit</label>
+                        <textarea id="reason" placeholder="Briefly describe your symptoms..."
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;"
+                            rows="3"></textarea>
+                    </div>
+
+                    <p id="appointment-error" role="alert" hidden></p>
+                    <button id="booking-button" type="submit" class="btn btn-primary" style="width: 100%;">Confirm Booking</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { apiUrl, getAuthToken, getCurrentUser, initAuthGuard } from '../../js/auth.js';
+
+        const form = document.getElementById('appointment-form');
+        const doctorSelect = document.getElementById('doc');
+        const error = document.getElementById('appointment-error');
+        const button = document.getElementById('booking-button');
+        let currentUser;
+        let doctors = [];
+
+        function renderDoctorOptions() {
+            const specialty = document.getElementById('spec').value;
+            const matchingDoctors = doctors.filter((doctor) => !specialty || doctor.specialization === specialty);
+            doctorSelect.replaceChildren();
+            if (!matchingDoctors.length) {
+                doctorSelect.add(new Option('No doctors available for this specialty', ''));
+                doctorSelect.disabled = true;
+                button.disabled = true;
+                return;
+            }
+            doctorSelect.disabled = false;
+            button.disabled = false;
+            matchingDoctors.forEach((doctor) => doctorSelect.add(new Option(`${doctor.name} · ${doctor.specialization}`, doctor.doctor_id)));
+        }
+
+        function showError(message) {
+            error.hidden = false;
+            error.textContent = message;
+        }
+
+        async function request(path, options = {}) {
+            const token = await getAuthToken();
+            const response = await fetch(apiUrl(path), {
+                ...options,
+                headers: { ...(options.headers || {}), Authorization: `Bearer ${token}` },
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || payload.success === false) throw new Error(payload.error?.message || payload.error || 'Request failed.');
+            return payload;
+        }
+
+        async function loadDoctors() {
+            currentUser = await initAuthGuard(['patient', 'super_admin']);
+            if (!currentUser) return;
+            const payload = await request('/api/doctors');
+            doctors = payload.data || [];
+            doctorSelect.replaceChildren();
+            if (!doctors.length) {
+                doctorSelect.disabled = true;
+                const option = new Option('No doctors available', '');
+                doctorSelect.add(option);
+                button.disabled = true;
+                return;
+            }
+            const specialties = [...new Set(doctors.map((doctor) => doctor.specialization).filter(Boolean))].sort();
+            const specialtySelect = document.getElementById('spec');
+            specialtySelect.replaceChildren(new Option('All specialties', ''));
+            specialties.forEach((specialty) => specialtySelect.add(new Option(specialty, specialty)));
+            specialtySelect.addEventListener('change', renderDoctorOptions);
+            renderDoctorOptions();
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            error.hidden = true;
+            const doctor = doctors.find((item) => item.doctor_id === doctorSelect.value);
+            if (!doctor || !currentUser) return showError('Choose an available doctor and sign in again.');
+            button.disabled = true;
+            button.textContent = 'Booking...';
+            try {
+                const profile = await request('/api/health-record/profile');
+                await request('/api/appointments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patient_id: currentUser.uid,
+                        doctor_id: doctor.doctor_id,
+                        patient_name: profile.data?.full_name || currentUser.email,
+                        doctor_name: doctor.name,
+                        appointment_date: document.getElementById('date').value,
+                        appointment_time: document.getElementById('slot').value,
+                        appointment_type: 'in-person',
+                        reason: document.getElementById('reason').value.trim(),
+                        created_by: currentUser.uid,
+                    }),
+                });
+                window.location.href = '../patient/dashboard.html';
+            } catch (bookingError) {
+                showError(bookingError.message || 'Unable to book appointment.');
+                button.disabled = false;
+                button.textContent = 'Confirm Booking';
+            }
+        });
+
+        loadDoctors().catch((loadError) => showError(loadError.message || 'Unable to load doctors.'));
+    </script>
+    <script src="../../js/script.js"></script>
+</body>
+
+</html>
