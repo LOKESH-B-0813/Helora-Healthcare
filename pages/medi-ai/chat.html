@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Helora Medi-AI - medical information and decision-support assistant" />
+    <meta name="theme-color" content="#0d9488" />
+    <title>Medi-AI | Helora</title>
+    <link rel="icon" type="image/png" href="../../assets/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="../../css/style.css" />
+    <style>
+        :root {
+            --teal: #0d9488;
+            --teal-dark: #0f766e;
+            --rose: #e11d48;
+            --rose-soft: #fff1f2;
+            --amber: #d97706;
+            --bg: #f6f8fb;
+            --surface: #ffffff;
+            --border: #e3e8f0;
+            --text: #1b2534;
+            --muted: #5b6b7e;
+            --shadow-sm: 0 1px 2px 0 rgb(16 24 40 / 0.06);
+            --shadow-md: 0 8px 24px -6px rgb(16 24 40 / 0.14);
+            --radius: 14px;
+            --ring: 0 0 0 3px rgb(13 148 136 / 0.18);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        button { font: inherit; }
+        :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+        .medi-app { display: flex; height: 100vh; }
+
+        /* ---------- Sidebar (conversations) ---------- */
+        .sidebar {
+            width: 300px; min-width: 300px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            z-index: 40;
+        }
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 0.65rem;
+            padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            background: linear-gradient(135deg, #ecfdf5, #eef7ff);
+        }
+        .sidebar-brand img { height: 34px; width: 34px; object-fit: contain; }
+        .sidebar-brand .brand-copy { line-height: 1.15; }
+        .sidebar-brand strong { font-size: 1.05rem; color: var(--teal-dark); display: block; }
+        .sidebar-brand small { color: var(--muted); font-size: 0.72rem; }
+
+        .sidebar-actions { padding: 0.9rem 1rem 0.6rem; }
+        .btn-new-chat {
+            width: 100%; padding: 0.65rem 1rem; border-radius: 10px; border: none; cursor: pointer;
+            background: linear-gradient(135deg, var(--teal), #0ea5e9);
+            color: #fff; font-weight: 600; font-size: 0.95rem;
+            box-shadow: var(--shadow-md);
+        }
+        .btn-new-chat:hover { filter: brightness(1.04); }
+
+        .sidebar-search { padding: 0 1rem 0.4rem; }
+        #conv-search {
+            width: 100%; padding: 0.55rem 0.8rem; border: 1px solid var(--border);
+            border-radius: 10px; font-size: 0.9rem; outline: none; background: var(--bg); color: var(--text);
+        }
+        #conv-search:focus { border-color: var(--teal); box-shadow: var(--ring); }
+
+        .conversations-list { flex: 1; overflow-y: auto; padding: 0.4rem 0.6rem 1rem; }
+        .conv-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 0.7rem; border-radius: 10px; cursor: pointer;
+            color: var(--text); font-size: 0.9rem; border: 1px solid transparent;
+        }
+        .conv-item:hover { background: #f1f5f9; }
+        .conv-item.active { background: #ecfdf5; border-color: rgb(13 148 136 / 0.25); }
+        .conv-item .conv-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .conv-item .conv-meta { font-size: 0.68rem; color: var(--muted); flex-shrink: 0; }
+        .conv-item .conv-delete {
+            visibility: hidden; border: none; background: transparent; cursor: pointer;
+            color: var(--muted); font-size: 0.85rem; padding: 0.2rem 0.4rem; border-radius: 6px; flex-shrink: 0;
+        }
+        .conv-item:hover .conv-delete, .conv-item .conv-delete:focus-visible { visibility: visible; }
+        .conv-item .conv-delete:hover { color: var(--rose); background: var(--rose-soft); }
+        .conversations-empty { padding: 1.4rem 1rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+        .conversations-empty strong { display: block; font-size: 0.95rem; color: var(--text); margin-bottom: 0.3rem; }
+
+        .sidebar-footer { border-top: 1px solid var(--border); padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .sidebar-footer label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        #lang-side {
+            padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 0.9rem; background: var(--surface); color: var(--text); outline: none; cursor: pointer;
+        }
+        .guest-note {
+            font-size: 0.75rem; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: 8px; padding: 0.55rem 0.7rem; line-height: 1.4;
+        }
+
+        /* ---------- Main column ---------- */
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .main-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.65rem 1.1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+        }
+        .header-title { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+        .header-title h1 { font-size: 1.05rem; margin: 0; font-weight: 700; }
+        .status-chip {
+            font-size: 0.7rem; font-weight: 600; color: #166534; background: #dcfce7;
+            padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap;
+        }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .btn-ghost {
+            border: 1px solid var(--border); background: var(--surface); color: var(--text);
+            padding: 0.42rem 0.75rem; border-radius: 9px; cursor: pointer; font-size: 0.85rem; font-weight: 500;
+        }
+        .btn-ghost:hover { background: #f1f5f9; }
+        .btn-ghost.danger:hover { color: var(--rose); border-color: #fecdd3; }
+        .btn-ghost.primary-link { border-color: var(--teal); color: var(--teal-dark); }
+        .btn-ghost.primary-link:hover { background: #ecfdf5; }
+        #lang-top {
+            padding: 0.42rem 0.6rem; border: 1px solid var(--border); border-radius: 9px;
+            font-size: 0.8rem; background: var(--surface); color: var(--text); outline: none; cursor: pointer;
+        }
+        #menu-btn {
+            display: none; border: 1px solid var(--border); background: var(--surface);
+            color: var(--text); padding: 0.42rem 0.7rem; border-radius: 9px; cursor: pointer; font-size: 1rem;
+        }
+
+        .patient-toggle {
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted);
+            padding: 0.4rem 0.7rem; border-radius: 999px; border: 1px solid var(--border); cursor: pointer;
+            background: var(--surface); user-select: none; white-space: nowrap;
+        }
+        .patient-toggle input { accent-color: var(--teal); cursor: pointer; margin: 0; }
+        .patient-toggle.inactive { opacity: 0.55; }
+
+        /* ---------- Chat stream ---------- */
+        .chat-area { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+        .messages { max-width: 880px; margin: 0 auto; padding: 1.4rem 1.1rem 1.6rem; display: flex; flex-direction: column; gap: 1.1rem; }
+        .banner { border-radius: 12px; padding: 0.8rem 1rem; display: flex; gap: 0.7rem; align-items: flex-start; font-size: 0.88rem; line-height: 1.5; }
+        .banner.emergency { background: var(--rose-soft); border: 1px solid #fecdd3; color: #9f1239; }
+        .banner.warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+        .banner.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .banner .b-icon { font-weight: 700; flex-shrink: 0; }
+        .banner strong { display: block; margin-bottom: 0.1rem; }
+        #banner-info { max-width: 880px; margin: 1rem auto 0; }
+
+        .msg { display: flex; gap: 0.7rem; }
+        .msg .avatar {
+            width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.8rem; color: #fff;
+        }
+        .msg.user .avatar { background: linear-gradient(135deg, var(--teal), #0ea5e9); order: 2; }
+        .msg.assistant .avatar { background: linear-gradient(135deg, #10b981, #14b8a6); }
+        .msg.user .msg-content, .msg .msg-content { display: flex; flex-direction: column; }
+        .msg.user { justify-content: flex-end; }
+        .msg.user .msg-content { align-items: flex-end; }
+        .msg .bubble {
+            max-width: min(82%, 640px); padding: 0.7rem 0.95rem; border-radius: 14px;
+            line-height: 1.55; font-size: 0.95rem; overflow-wrap: anywhere;
+        }
+        .msg.user .bubble {
+            background: linear-gradient(135deg, var(--teal), #0ea5e9); color: #fff;
+            border-bottom-right-radius: 4px; white-space: pre-wrap;
+        }
+        .msg.assistant .bubble {
+            background: var(--surface); border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm); border-bottom-left-radius: 4px;
+        }
+        .md > *:first-child { margin-top: 0; }
+        .md > *:last-child { margin-bottom: 0; }
+        .md p { margin: 0.4rem 0; }
+        .md h1, .md h2, .md h3 { margin: 0.7rem 0 0.3rem; line-height: 1.3; }
+        .md h1 { font-size: 1.15rem; } .md h2 { font-size: 1.05rem; } .md h3 { font-size: 0.98rem; }
+        .md ul, .md ol { margin: 0.4rem 0; padding-left: 1.3rem; }
+        .md li { margin: 0.2rem 0; }
+        .md pre { background: #0f172a; color: #e2e8f0; padding: 0.7rem 0.85rem; border-radius: 10px; overflow-x: auto; font-size: 0.85rem; }
+        .md code { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 0.86em; }
+        .md p code, .md li code { background: #eef2f7; padding: 0.1rem 0.3rem; border-radius: 5px; }
+        .md blockquote { margin: 0.4rem 0; padding: 0.2rem 0.8rem; border-left: 3px solid var(--teal); color: var(--muted); }
+
+        .msg-actions { display: flex; gap: 0.3rem; margin-top: 0.4rem; }
+        .msg-actions button {
+            border: none; background: transparent; color: var(--muted); cursor: pointer;
+            font-size: 0.78rem; padding: 0.2rem 0.5rem; border-radius: 6px;
+        }
+        .msg-actions button:hover { background: #eef2f7; color: var(--text); }
+
+        .meta-sections { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem; max-width: 560px; }
+        .meta-card {
+            background: #fbfcfe; border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.85rem;
+        }
+        .meta-title { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem; }
+        .meta-card ul { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; }
+        .meta-card li { margin: 0.2rem 0; }
+        .specialist-name { font-weight: 600; color: var(--teal-dark); font-size: 0.95rem; }
+        .specialist-reason { margin: 0.25rem 0 0.55rem; color: var(--muted); font-size: 0.85rem; }
+        .btn-find-doctors {
+            display: inline-block; padding: 0.4rem 0.9rem; border-radius: 9px; text-decoration: none;
+            background: linear-gradient(135deg, var(--teal), #0ea5e9); color: #fff; font-weight: 600; font-size: 0.82rem;
+        }
+        .btn-find-doctors:hover { filter: brightness(1.05); }
+        .sources-list { list-style: none !important; padding-left: 0 !important; }
+        .sources-list li { display: flex; gap: 0.5rem; align-items: baseline; }
+        .source-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0; display: inline-block; }
+
+        .cursor-blink { display: inline-block; width: 2px; height: 1em; background: var(--teal); vertical-align: text-bottom; animation: blink 1s infinite; margin-left: 1px; }
+        @keyframes blink { 0%, 60%, 100% { opacity: 0.2; } 30% { opacity: 1; } }
+        .typing-dots { display: inline-flex; gap: 5px; align-items: center; padding: 0.3rem 0.2rem; }
+        .typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: blink 1.2s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+
+        /* Welcome */
+        .welcome-card { margin: 5vh auto 1rem; max-width: 640px; text-align: center; padding: 1.5rem 1.25rem; }
+        .welcome-logo {
+            width: 64px; height: 64px; margin: 0 auto 0.8rem; border-radius: 18px;
+            background: linear-gradient(135deg, #ccfbf1, #dbeafe); color: var(--teal-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+        }
+        .welcome-card h2 { margin: 0 0 0.4rem; font-size: 1.45rem; color: var(--teal-dark); }
+        .welcome-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin: 0 0 0.6rem; }
+        .welcome-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 0.8rem; }
+        .welcome-chips button {
+            border: 1px solid var(--border); background: var(--surface); color: var(--text);
+            padding: 0.45rem 0.85rem; border-radius: 999px; cursor: pointer; font-size: 0.8rem;
+        }
+        .welcome-chips button:hover { border-color: var(--teal); color: var(--teal-dark); background: #ecfdf5; }
+
+        /* ---------- Emergency pinned bar + composer ---------- */
+        .compose-wrap { border-top: 1px solid var(--border); background: var(--surface); padding: 0.7rem 1.1rem 0.9rem; }
+        #emergency-pin {
+            max-width: 880px; margin: 0 auto 0.6rem; border-radius: 12px; padding: 0.75rem 1rem;
+            position: relative; font-size: 0.88rem; line-height: 1.45;
+            background: var(--rose-soft); border: 1px solid #fecdd3; color: #9f1239;
+        }
+        #emergency-pin strong { display: block; margin-bottom: 0.15rem; }
+        .pin-close {
+            position: absolute; top: 0.4rem; right: 0.4rem; border: none; background: transparent;
+            cursor: pointer; color: #9f1239; font-size: 0.85rem; padding: 0.3rem; border-radius: 6px;
+        }
+        .compose-box {
+            max-width: 880px; margin: 0 auto; display: flex; align-items: flex-end; gap: 0.6rem;
+            border: 1px solid var(--border); border-radius: 16px; padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+            background: var(--surface); box-shadow: var(--shadow-sm);
+        }
+        .compose-box:focus-within { border-color: var(--teal); box-shadow: var(--ring); }
+        .compose-hint { max-width: 880px; margin: 0.3rem auto 0; font-size: 0.68rem; color: var(--muted); padding: 0 0.2rem; }
+        #composer {
+            flex: 1; border: none; outline: none; resize: none; font: inherit; font-size: 0.95rem;
+            max-height: 160px; background: transparent; padding: 0.3rem 0; line-height: 1.5;
+        }
+        .char-count { font-size: 0.7rem; color: var(--muted); padding: 0.3rem 0.2rem 0; white-space: nowrap; }
+        .btn-send {
+            border: none; border-radius: 12px; padding: 0.62rem 1.35rem; cursor: pointer;
+            background: linear-gradient(135deg, var(--teal), #0ea5e9); color: #fff;
+            font-weight: 600; font-size: 0.92rem; box-shadow: var(--shadow-sm);
+        }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        .btn-attach {
+            border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+            border-radius: 12px; padding: 0.55rem 0.75rem; cursor: not-allowed; font-size: 0.85rem; opacity: 0.55;
+        }
+
+        .disclaimer {
+            max-width: 880px; margin: 0 auto; padding: 0.55rem 0.2rem 0.1rem;
+            text-align: center; font-size: 0.72rem; color: var(--muted);
+        }
+
+        .toast {
+            position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #1b2534; color: #f8fafc; padding: 0.6rem 1rem; border-radius: 10px;
+            font-size: 0.85rem; opacity: 0; pointer-events: none; z-index: 60;
+        }
+        .toast.show { opacity: 0.95; transform: translateX(-50%) translateY(0); }
+
+        /* Error bubble */
+        .msg.error-bubble .bubble { background: #fffaf0; border-color: #f2d3a5; }
+
+        .scrim { display: none; position: fixed; inset: 0; background: rgb(15 23 42 / 0.4); z-index: 35; }
+        .scrim.show { display: block; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            #menu-btn { display: inline-flex; }
+            .sidebar {
+                position: fixed; top: 0; left: 0; height: 100vh;
+                transform: translateX(-100%); transition: transform 0.22s ease;
+                box-shadow: var(--shadow-md);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .patient-toggle span.label { display: none; }
+        }
+        @media (max-width: 620px) {
+            .main-header { flex-wrap: wrap; gap: 0.5rem; }
+            .header-actions { width: 100%; max-width: 100%; box-sizing: border-box; justify-content: space-between; flex-wrap: wrap; }
+            .messages { padding: 1rem 0.7rem 1.2rem; }
+            .compose-wrap { padding: 0.6rem 0.7rem 0.8rem; }
+            .btn-send { padding: 0.62rem 1rem; }
+            .msg .bubble { max-width: 88%; }
+            .welcome-card { margin-top: 2vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="medi-app" id="medi-app">
+        <!-- Sidebar -->
+        <aside class="sidebar" aria-label="Conversation history">
+            <div class="sidebar-brand" id="brand" title="Go to Helora home">
+                <img src="../../assets/logo.png" alt="Helora" />
+                <div class="brand-copy">
+                    <strong>Medi-AI</strong>
+                    <small>Medical information assistant</small>
+                </div>
+            </div>
+            <div class="sidebar-actions">
+                <button class="btn-new-chat" id="new-chat" type="button">+ New conversation</button>
+            </div>
+            <div class="sidebar-search">
+                <input id="conv-search" type="search" placeholder="Search conversations..." autocomplete="off" aria-label="Search conversations" />
+            </div>
+            <div class="conversations-list" id="conversations" role="listbox" aria-label="Past conversations"></div>
+            <div class="sidebar-footer">
+                <div class="guest-note" id="guest-note" hidden>
+                    You are browsing as a guest. Chat is available, but conversations will not be saved and health
+                    records are not used. <a href="/pages/patient/login.html">Sign in</a> to save history.
+                </div>
+                <label for="lang-side">Answer language</label>
+                <select id="lang-side" data-lang-select aria-label="Answer language"></select>
+            </div>
+        </aside>
+
+        <div class="scrim" id="sidebar-scrim" aria-hidden="true"></div>
+
+        <!-- Main -->
+        <main class="main">
+            <header class="main-header">
+                <button id="menu-btn" type="button" aria-label="Open conversation history" title="Conversations">☰</button>
+                <div class="header-title">
+                    <h1>Medi-AI</h1>
+                    <span class="status-chip" id="status-chip">AI Support</span>
+                </div>
+                <label class="patient-toggle" id="patient-toggle" title="Include your Helora health records as context for the assistant">
+                    <input type="checkbox" id="use-patient-data" />
+                    <span class="label">Use my health records</span>
+                </label>
+                <div class="header-actions">
+                    <select id="lang-top" data-lang-select aria-label="Answer language" title="Answer language"></select>
+                    <button class="btn-ghost primary-link" id="guest-cta" type="button" hidden>Sign in</button>
+                    <button class="btn-ghost" id="back-home" type="button" title="Back to Helora">Home</button>
+                    <button class="btn-ghost" id="clear-conv" type="button" title="Clear this conversation (removes all messages)">Clear</button>
+                    <button class="btn-ghost danger" id="delete-conv" type="button" title="Delete this conversation" hidden>Delete</button>
+                </div>
+            </header>
+
+            <section class="chat-area" id="chat-area">
+                <div class="banner info" id="banner-info" hidden>
+                    <span class="b-icon" aria-hidden="true">i</span>
+                    <div>
+                        <strong>General guidance only</strong>
+                        Medi-AI shares health information and decision support. It is not a doctor and does not give a
+                        diagnosis, prescription, or treatment plan. Emergencies should still be handled by emergency services.
+                    </div>
+                </div>
+                <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+            </section>
+
+            <footer class="compose-wrap">
+                <div id="emergency-pin" hidden role="alert"></div>
+                <div class="compose-box">
+                    <button class="btn-attach" type="button" title="Image and document analysis is not available yet" aria-disabled="true">+</button>
+                    <textarea id="composer" rows="1" placeholder="Describe your symptoms or ask a question..." aria-label="Message Medi-AI" maxlength="4000"></textarea>
+                    <span class="char-count" id="char-count">0 / 4000</span>
+                    <button class="btn-send" id="send" type="button" aria-label="Send message">Send</button>
+                </div>
+                <div class="compose-hint">Enter to send · Shift+Enter for a new line · Information only, not a diagnosis.</div>
+                <div class="disclaimer" id="page-disclaimer"></div>
+            </footer>
+        </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="../../js/medi-ai.js"></script>
+</body>
+</html>
