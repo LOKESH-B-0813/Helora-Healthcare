@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="section-title" style="margin-bottom: 2rem;">
+                <h2>Patient Registration</h2>
+                <p>Join Helora Healthcare</p>
+            </div>
+
+            <button type="button" id="google-register-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+                Continue with Google
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0 1.5rem; color: var(--text-secondary);">
+                <span style="flex: 1; border-top: 1px solid var(--border-color);"></span>
+                <small>or continue with email</small>
+                <span style="flex: 1; border-top: 1px solid var(--border-color);"></span>
+            </div>
+
+            <div id="status-box" class="alert-box" style="display: none; margin-bottom: 1rem;"></div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="age" required placeholder="e.g. 30">
+                </div>
+                <div class="form-group">
+                    <label>Current Condition (Secondary)</label>
+                    <input type="text" id="condition" placeholder="e.g. Healthy / Diabetes">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                Already have an account? <a href="login.html" style="color: var(--primary-color);">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { registerPatientAccount, readableAppwriteError, startPatientGoogleAuth } from '../../js/auth.js?v=267';
+
+        const statusBox = document.getElementById('status-box');
+
+        function showStatus(message, isError = false) {
+            statusBox.textContent = message;
+            statusBox.style.display = 'block';
+            statusBox.style.background = isError ? '#feefef' : '#ecfdf5';
+            statusBox.style.border = isError ? '1px solid #fca5a5' : '1px solid #86efac';
+            statusBox.style.color = isError ? '#991b1b' : '#166534';
+        }
+
+        document.getElementById('google-register-btn').addEventListener('click', async () => {
+            const button = document.getElementById('google-register-btn');
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Redirecting...';
+            try {
+                await startPatientGoogleAuth();
+            } catch (error) {
+                button.disabled = false;
+                button.textContent = originalText;
+                showStatus(readableAppwriteError(error), true);
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Creating account...';
+            try {
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const age = document.getElementById('age').value.trim();
+                const condition = document.getElementById('condition').value.trim();
+
+                await registerPatientAccount({ full_name: name, email, password, age, condition });
+                showStatus('Account created. We sent a verification email to your inbox. Check your email and then sign in.');
+                form.reset();
+                const resendButton = document.createElement('button');
+                resendButton.type = 'button';
+                resendButton.className = 'btn btn-secondary';
+                resendButton.style.width = '100%';
+                resendButton.style.marginTop = '0.75rem';
+                resendButton.textContent = 'Resend verification email';
+                resendButton.addEventListener('click', async () => {
+                    try {
+                        const { appwriteAccount } = await import('../../js/appwrite-init.js?v=267');
+                        await appwriteAccount.createVerification(`${window.location.origin}/pages/patient/login.html?verified=1`);
+                        showStatus('Verification email resent successfully.');
+                    } catch (error) {
+                        showStatus(readableAppwriteError(error), true);
+                    }
+                });
+                statusBox.appendChild(resendButton);
+            } catch (error) {
+                showStatus(readableAppwriteError(error), true);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+
+</html>
