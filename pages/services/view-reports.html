@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Records - Helora</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .records-shell { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+        .records-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin:1.5rem 0; }
+        .record-card { background:#fff; border:1px solid var(--border-color); border-radius:12px; padding:1.25rem; }
+        .record-card h3 { margin-top:0; }
+        .record-list { display:grid; gap:.75rem; }
+        .record-item { padding:1rem; border:1px solid var(--border-color); border-radius:8px; background:#fff; }
+        .record-muted { color:var(--text-secondary); }
+        .record-error { color:#b42318; background:#fff3f2; border:1px solid #f4c7c3; padding:.75rem 1rem; border-radius:8px; }
+        .record-upload { display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+        @media (max-width:600px) { .record-upload { align-items:stretch; flex-direction:column; } }
+    </style>
+</head>
+<body>
+    <header><div class="container"><nav><div class="logo"><img src="../../assets/logo.png" alt="Helora" style="height:32px"> Helora Health Records</div><div class="nav-links"><a href="../../index.html">Home</a><button class="btn btn-outline" id="logout">Logout</button></div></nav></div></header>
+    <main class="records-shell">
+        <div id="health-error" class="record-error" hidden></div>
+        <section class="record-card"><h1>My Health Record</h1><p id="profile-summary" class="record-muted">Loading your authorized profile...</p></section>
+        <section class="records-grid">
+            <article class="record-card"><h3>Appointments</h3><strong id="appointment-count">0</strong><p class="record-muted">Your appointment history</p></article>
+            <article class="record-card"><h3>Medical Reports</h3><strong id="report-count">0</strong><p class="record-muted">Private report metadata</p></article>
+            <article class="record-card"><h3>Pharmacy</h3><strong id="pharmacy-count">0</strong><p class="record-muted">Recorded pharmacy items</p></article>
+            <article class="record-card"><h3>Notifications</h3><strong id="notification-count">0</strong><p class="record-muted">Your notifications</p></article>
+            <article class="record-card"><h3>Consultations</h3><strong id="consultation-count">0</strong><p class="record-muted">Your consultation records</p></article>
+            <article class="record-card"><h3>Doctor Advice</h3><strong id="advice-count">0</strong><p class="record-muted">Advice from your care team</p></article>
+        </section>
+        <section class="record-card"><h2>Upload a report</h2><p class="record-muted">Files are stored privately in Helora Storage and linked to your patient record.</p><form id="report-form" class="record-upload"><input id="report-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx" required><button class="btn btn-primary" type="submit">Upload report</button><span id="upload-status" class="record-muted"></span></form></section>
+        <section class="record-card"><h2>Medical reports</h2><div id="reports" class="record-list"><p class="record-muted">Loading...</p></div></section>
+        <section class="record-card"><h2>Appointments</h2><div id="appointments" class="record-list"><p class="record-muted">Loading...</p></div></section>
+    </main>
+    <script type="module" src="../../js/health-records.js"></script>
+</body>
+</html>
