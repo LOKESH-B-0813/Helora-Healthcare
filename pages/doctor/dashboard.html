@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Helora</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script type="module">
+        import { apiUrl, getAuthToken, initAuthGuard, logout } from '../../js/auth.js';
+
+        const setText = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value == null || value === '' ? '-' : String(value);
+        };
+
+        const renderAppointments = (appointments) => {
+            const container = document.getElementById('doctor-schedule');
+            container.replaceChildren();
+            if (!appointments.length) {
+                const empty = document.createElement('p');
+                empty.className = 'empty-state';
+                empty.textContent = 'No appointments are scheduled for today.';
+                container.appendChild(empty);
+                return;
+            }
+            appointments.forEach((appointment) => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                const info = document.createElement('div');
+                info.className = 'item-info';
+                const patient = document.createElement('h4');
+                patient.textContent = appointment.patient_name || 'Patient';
+                const details = document.createElement('p');
+                details.textContent = `${appointment.appointment_type || 'Appointment'} · ${appointment.appointment_time || appointment.appointment_date || '-'}`;
+                info.append(patient, details);
+                const status = document.createElement('span');
+                status.className = 'status-badge status-pending';
+                status.textContent = String(appointment.status || 'pending').toUpperCase();
+                item.append(info, status);
+                container.appendChild(item);
+            });
+        };
+
+        async function loadDashboard() {
+            const error = document.getElementById('doctor-dashboard-error');
+            const container = document.getElementById('doctor-schedule');
+            try {
+                const user = await initAuthGuard(['doctor', 'super_admin']);
+                if (!user) return;
+                setText('doctor-name', user.full_name || user.email || 'Doctor');
+                const token = await getAuthToken();
+                const response = await fetch(apiUrl('/api/doctor/dashboard'), { headers: { Authorization: `Bearer ${token}` } });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || !payload.success) throw new Error(payload.error?.message || payload.error || 'Unable to load doctor dashboard.');
+                const data = payload.data || {};
+                const profile = data.profile || {};
+                setText('doctor-specialty', profile.specialization || 'Doctor');
+                setText('patients-today', data.stats?.patients_today || 0);
+                setText('completed-count', data.stats?.completed || 0);
+                setText('pending-count', data.stats?.pending || 0);
+                renderAppointments(data.today_appointments || []);
+            } catch (loadError) {
+                error.hidden = false;
+                error.textContent = loadError.message || 'Unable to load doctor dashboard.';
+                container.replaceChildren();
+                const empty = document.createElement('p');
+                empty.className = 'empty-state';
+                empty.textContent = 'Dashboard data could not be loaded. Please retry.';
+                container.appendChild(empty);
+            }
+        }
+
+        document.getElementById('logout-link')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            logout();
+        });
+        loadDashboard();
+    </script>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="../../assets/logo.png" alt="Logo" style="width: 30px; height: 30px; margin-right: 10px;">
+                Helora
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#" class="nav-link">
+                        <ion-icon name="grid-outline"></ion-icon>
+                        Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#doctor-schedule" class="nav-link">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../services/consultation.html" class="nav-link">
+                        <ion-icon name="videocam-outline"></ion-icon>
+                        Online Consult
+                    </a>
+                </li>
+            </ul>
+
+            <div style="margin-top: auto;">
+                    <a href="../../index.html" id="logout-link" class="nav-link" style="color: #ef4444;">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="user-info">
+                    <h2>Welcome, <span id="doctor-name" style="color: var(--primary-color);">Loading...</span></h2>
+                    <p id="doctor-specialty">Loading doctor profile...</p>
+                </div>
+                <!-- CREATE MEETING BUTTON -->
+                <button class="btn btn-primary" onclick="window.location.href='../services/consultation.html'">
+                    <ion-icon name="add-circle-outline" style="font-size: 1.2rem;"></ion-icon>
+                    Create New Meeting
+                </button>
+            </header>
+
+            <!-- Stats Grid -->
+            <p id="doctor-dashboard-error" role="alert" hidden></p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">
+                        <ion-icon name="people"></ion-icon>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="patients-today">-</h3>
+                        <p>Patients Today</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="completed-count">-</h3>
+                        <p>Completed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fae8ff; color: #9333ea;">
+                        <ion-icon name="time"></ion-icon>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pending-count">-</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>Today's Schedule</h3>
+                <div class="appointment-list" id="doctor-schedule">
+                    <p class="empty-state">Loading appointments...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>
