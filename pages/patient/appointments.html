@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment History - Helora Patient</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/patient-portal.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-img">
+                        <img src="../../assets/logo.png" alt="Logo"
+                            style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <span>Helora Patient</span>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html" data-back-link>Dashboard</a>
+                    <a href="prescriptions.html" data-portal-link>Prescriptions</a>
+                    <a href="records.html" data-portal-link>Records</a>
+                    <a href="profile.html" data-portal-link>Profile</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-outline" id="logout-btn" type="button">Logout</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem 0;">
+        <div class="patient-back-row">
+            <a class="btn btn-outline" data-back-link href="dashboard.html">← Back to Dashboard</a>
+        </div>
+        <div id="demo-banner" class="demo-banner" hidden>
+            <strong>Demonstration mode - test data only.</strong>
+            These labelled [TEST-DATA] appointments belong to a fictional demo patient.
+        </div>
+        <p id="page-error" class="page-error" hidden></p>
+
+        <div class="section-head">
+            <h1>Appointment History (<span id="appt-total">…</span>)</h1>
+        </div>
+        <div id="appointments-list" class="record-list"><p class="record-muted">Loading...</p></div>
+    </main>
+
+    <script type="module">
+        import { summarize } from '../../js/patient-portal-data.js';
+        import {
+            appendField, bindLogout, formatDate, hideError,
+            requirePatientDataset, showEmpty, showError, withDemo,
+        } from '../../js/patient-portal.js';
+
+        document.querySelectorAll('a[data-portal-link]').forEach((link) => {
+            link.setAttribute('href', withDemo(link.getAttribute('href')));
+        });
+
+        async function load() {
+            hideError('page-error');
+            const loaded = await requirePatientDataset();
+            if (!loaded) return;
+            const { dataset } = loaded;
+            document.getElementById('appt-total').textContent = summarize(dataset).appointments;
+
+            const container = document.getElementById('appointments-list');
+            container.replaceChildren();
+            if (!dataset.appointments.length) {
+                showEmpty('appointments-list', 'No appointments yet. Your upcoming and past appointments will appear here.');
+                return;
+            }
+            dataset.appointments.forEach((row) => {
+                const item = document.createElement('article');
+                item.className = 'record-item';
+                appendField(item, 'Doctor', row.doctor_name);
+                appendField(item, 'Date', `${formatDate(row.appointment_date)}${row.appointment_time ? ` · ${row.appointment_time}` : ''}`);
+                appendField(item, 'Type', row.appointment_type);
+                appendField(item, 'Status', String(row.status || 'pending').toUpperCase());
+                const link = document.createElement('a');
+                link.className = 'btn btn-outline';
+                link.textContent = 'View details';
+                link.setAttribute('href', withDemo(`appointment-details.html?id=${encodeURIComponent(row.$id)}`));
+                item.appendChild(link);
+                container.appendChild(item);
+            });
+        }
+
+        bindLogout();
+        load().catch((error) => {
+            console.error(error);
+            showError('page-error', error.message || 'Unable to load appointments.');
+            showEmpty('appointments-list', 'Could not load appointments.');
+        });
+    </script>
+</body>
+
+</html>
