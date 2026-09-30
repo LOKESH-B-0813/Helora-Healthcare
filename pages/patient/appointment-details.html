@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Details - Helora Patient</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/patient-portal.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-img">
+                        <img src="../../assets/logo.png" alt="Logo"
+                            style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <span>Helora Patient</span>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html" data-back-link>Dashboard</a>
+                    <a href="appointments.html" data-back-link>Appointments</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-outline" id="logout-btn" type="button">Logout</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem 0;">
+        <div class="patient-back-row">
+            <a class="btn btn-outline" data-back-link href="appointments.html">← Back to Appointments</a>
+        </div>
+        <div id="demo-banner" class="demo-banner" hidden>
+            <strong>Demonstration mode - test data only.</strong>
+            This labelled [TEST-DATA] appointment belongs to a fictional demo patient.
+        </div>
+        <p id="page-error" class="page-error" hidden></p>
+
+        <h1>Appointment Details</h1>
+        <div id="detail" class="detail-grid"><p class="record-muted">Loading...</p></div>
+    </main>
+
+    <script type="module">
+        import { buildVisitTracker, findAppointment } from '../../js/patient-portal-data.js';
+        import {
+            appendField, bindLogout, formatDate, hideError,
+            requirePatientDataset, showError, withDemo,
+        } from '../../js/patient-portal.js';
+
+        async function load() {
+            hideError('page-error');
+            const loaded = await requirePatientDataset();
+            if (!loaded) return;
+            const { dataset } = loaded;
+            const id = new URLSearchParams(window.location.search).get('id');
+            const row = id ? findAppointment(dataset, id) : null;
+
+            const container = document.getElementById('detail');
+            container.replaceChildren();
+            if (!row) {
+                const empty = document.createElement('p');
+                empty.className = 'record-muted';
+                empty.textContent = 'Appointment not found. It may have been removed or the link is invalid.';
+                container.appendChild(empty);
+                return;
+            }
+
+            const tracker = buildVisitTracker(row);
+            const trackerCard = document.createElement('section');
+            trackerCard.className = 'record-item visit-tracker';
+            const trackerHeading = document.createElement('h2');
+            trackerHeading.textContent = 'Track My Visit';
+            trackerCard.appendChild(trackerHeading);
+            const arrival = document.createElement('p');
+            arrival.textContent = tracker.suggestedArrival
+                ? `Suggested arrival: ${tracker.suggestedArrival} (10-minute check-in buffer; not a live delay prediction).`
+                : 'Arrival guidance is unavailable because this appointment has no readable scheduled time.';
+            trackerCard.appendChild(arrival);
+
+            const steps = document.createElement('ol');
+            steps.setAttribute('aria-label', 'Appointment progress');
+            tracker.steps.forEach((step) => {
+                const entry = document.createElement('li');
+                entry.dataset.state = step.state;
+                entry.textContent = `${step.label} · ${step.state}`;
+                steps.appendChild(entry);
+            });
+            trackerCard.appendChild(steps);
+
+            const queue = document.createElement('p');
+            if (tracker.hasLiveQueueData) {
+                const values = [];
+                if (tracker.queuePosition != null) values.push(`Queue position: ${tracker.queuePosition}`);
+                if (tracker.waitMinutes != null) values.push(`Estimated wait: ${tracker.waitMinutes} minutes`);
+                if (tracker.completionTime) values.push(`Estimated completion: ${tracker.completionTime}`);
+                queue.textContent = values.join(' · ');
+            } else {
+                queue.textContent = 'Live queue position and wait estimate have not been posted for this appointment.';
+            }
+            trackerCard.appendChild(queue);
+            container.appendChild(trackerCard);
+
+            const card = document.createElement('article');
+            card.className = 'record-item';
+            appendField(card, 'Appointment ID', row.$id);
+            appendField(card, 'Doctor', row.doctor_name);
+            appendField(card, 'Date', formatDate(row.appointment_date));
+            appendField(card, 'Time', row.appointment_time);
+            appendField(card, 'Type', row.appointment_type);
+            appendField(card, 'Reason', row.reason);
+            appendField(card, 'Status', String(row.status || 'pending').toUpperCase());
+            appendField(card, 'Doctor notes', row.doctor_notes);
+            appendField(card, 'Meeting link', row.meeting_url);
+            container.appendChild(card);
+
+            const related = (dataset.prescriptions || []).filter((rx) => rx.appointment_id === row.$id);
+            if (related.length) {
+                const relatedCard = document.createElement('article');
+                relatedCard.className = 'record-item';
+                const heading = document.createElement('h3');
+                heading.textContent = 'Related prescriptions';
+                relatedCard.appendChild(heading);
+                related.forEach((rx) => {
+                    const link = document.createElement('a');
+                    link.className = 'btn btn-outline';
+                    link.style.marginRight = '0.5rem';
+                    link.textContent = `View prescription ${rx.$id}`;
+                    link.setAttribute('href', withDemo(`prescription-details.html?id=${encodeURIComponent(rx.$id)}`));
+                    relatedCard.appendChild(link);
+                });
+                container.appendChild(relatedCard);
+            }
+        }
+
+        bindLogout();
+        load().catch((error) => {
+            console.error(error);
+            showError('page-error', error.message || 'Unable to load this appointment.');
+        });
+    </script>
+</body>
+
+</html>
