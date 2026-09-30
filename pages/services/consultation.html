@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helora Online Consult</title>
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        /* Google Meet Clone CSS */
+        body {
+            background-color: #202124;
+            color: white;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Landing / Join Screen --- */
+        #join-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            color: #202124;
+            position: relative;
+        }
+
+        .join-container {
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            padding: 2rem;
+            align-items: center;
+            gap: 4rem;
+            box-sizing: border-box;
+        }
+
+        .join-left {
+            flex: 1;
+        }
+
+        .join-right {
+            flex: 1;
+            text-align: center;
+        }
+
+        .join-left h1 {
+            font-size: 2.75rem;
+            line-height: 3.25rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .join-left p {
+            font-size: 1.125rem;
+            color: #5f6368;
+            margin-bottom: 3rem;
+            line-height: 1.5;
+        }
+
+        .input-box {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .join-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #5f6368;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #202124;
+            width: 250px;
+            box-sizing: border-box;
+        }
+
+        .join-input:focus {
+            outline: 2px solid #1a73e8;
+            border-color: transparent;
+        }
+
+        .btn-join {
+            color: #1a73e8;
+            background: transparent;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-join:hover {
+            background: #f6fafe;
+        }
+
+        @media (max-width: 700px) {
+            body { height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: auto; }
+            #join-screen { min-height: 100vh; }
+            .join-container { flex-direction: column; align-items: stretch; gap: 2rem; padding: 1.25rem; }
+            .join-left, .join-right { min-width: 0; width: 100%; }
+            .join-left h1 { font-size: 2rem; line-height: 1.15; }
+            .join-left p { margin-bottom: 1.5rem; }
+            .input-box { flex-direction: column; align-items: stretch; }
+            .input-box > div { min-width: 0; width: 100%; }
+            .join-input { min-width: 0; width: 100%; flex: 1; }
+            .join-right img { max-width: 100%; height: auto; }
+        }
+
+        .btn-new {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-new:hover {
+            background: #1557b0;
+            box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        }
+
+        /* --- Meeting Room --- */
+        #meeting-room {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: #202124;
+        }
+
+        .main-stage {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            width: 100%;
+            max-width: 1200px;
+            height: 80%;
+        }
+
+        .video-tile {
+            background: #3c4043;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-tile video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .participant-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            background: #ea4335;
+            color: white;
+            border-radius: 50%;
+            font-size: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Bottom Control Bar */
+        .controls-bar {
+            height: 80px;
+            background: #202124;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .time-box {
+            color: #e8eaed;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding-left: 1rem;
+            border-left: 1px solid #5f6368;
+        }
+
+        .media-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: #3c4043;
+            border: 1px solid transparent;
+            /* default no border */
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: 0.2s;
+        }
+
+        .control-btn.red {
+            background: #ea4335;
+            width: 60px;
+        }
+
+        .control-btn:hover {
+            background: #5f6368;
+        }
+
+        .control-btn.red:hover {
+            background: #d93025;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal for Create */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV (Only on Landing) -->
+    <div id="landing-nav"
+        style="position: absolute; top: 0; left: 0; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem;">
+        <img src="../../assets/logo.png" alt="Helora" style="height: 40px;">
+        <span style="color: #5f6368; font-size: 1.3rem; font-family: 'Product Sans';">Helora <span
+                style="font-weight: bold; color: #5f6368;">Consult</span></span>
+    </div>
+
+    <!-- LANDING SCREEN -->
+    <div id="join-screen">
+        <div class="join-container">
+            <div class="join-left">
+                <h1>Premium video meetings.<br>Now free for everyone.</h1>
+                <p>We re-engineered the service for secure business meetings, making it free and available for all.</p>
+
+                <div class="input-box">
+                    <button class="btn-new" onclick="showCreateModal()">
+                        <ion-icon name="videocam"></ion-icon>
+                        New meeting
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="text" id="join-code" class="join-input" placeholder="Enter room code or link">
+                        <button class="btn-join" onclick="showJoinModal()">Join</button>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; border-bottom: 1px solid #dadce0; padding-bottom: 2rem; width: 80%;">
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem;"><a href="../../index.html"
+                        style="color: #1a73e8; text-decoration: none;">&larr; Back to Helora Home</a></p>
+            </div>
+
+            <div class="join-right">
+                <img src="https://www.gstatic.com/meet/user_edu_get_a_link_light_90698cd7b4ca04d3005c962a3756c42d.svg"
+                    alt="Video meeting illustration" style="max-width: 100%;">
+                <h3>Secure room setup</h3>
+                <p style="font-size: 0.9rem; color: #5f6368;">Meeting room setup is available. Live remote audio and video are not connected in this build.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEETING ROOM -->
+    <div id="meeting-room">
+        <div class="main-stage">
+            <div class="video-grid" id="grid">
+                <!-- Self -->
+                <div class="video-tile">
+                    <video id="local-video" autoplay muted></video>
+                    <div class="participant-label">You</div>
+                    <p id="camera-status" role="status" aria-live="polite"></p>
+                </div>
+                <!-- Remote participant preview; live remote video is not connected. -->
+                <div class="video-tile" id="remote-tile">
+                    <div class="avatar-circle">D</div>
+                    <div class="participant-label" id="remote-label">Remote video unavailable in this build</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-bar">
+            <div style="font-weight: 500; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span id="meeting-code-display">abc-defg-hij</span>
+            </div>
+
+            <div class="media-controls">
+                <button class="control-btn" type="button" aria-label="Toggle microphone" title="Toggle microphone" onclick="toggleMic()" id="btn-mic"><ion-icon name="mic-outline"></ion-icon></button>
+                <button class="control-btn" type="button" aria-label="Toggle camera" title="Toggle camera" onclick="toggleCam()" id="btn-cam"><ion-icon name="videocam-outline"></ion-icon></button>
+                <button class="control-btn red" type="button" aria-label="Leave meeting" title="Leave meeting" onclick="leaveMeeting()"><ion-icon name="call"></ion-icon></button>
+            </div>
+
+            <div style="display: flex; gap: 1rem; color: #e8eaed; font-size: 1.5rem;">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Create Meeting Modal -->
+    <div id="create-modal" class="modal hidden">
+        <div class="modal-box">
+            <h3>Create a Meeting</h3>
+            <input type="text" id="new-room-id" class="modal-input" placeholder="Create Room ID (e.g. CONSULT-101)">
+            <input type="password" id="new-room-pass" class="modal-input" placeholder="Set Password">
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button style="border: none; background: transparent; cursor: pointer; color: #5f6368;"
+                    onclick="closeModals()">Cancel</button>
+                <button class="btn-new" style="padding: 8px 16px;" onclick="createMeeting()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Meeting Modal (Pass Check) -->
+    <div id="join-modal" class="modal hidden">
+        <div class="modal-box">
+            <h3 id="join-room-title">Join Meeting</h3>
+            <input type="password" id="join-room-pass" class="modal-input" placeholder="Enter Password">
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button style="border: none; background: transparent; cursor: pointer; color: #5f6368;"
+                    onclick="closeModals()">Cancel</button>
+                <button class="btn-new" style="padding: 8px 16px;" onclick="joinMeeting()">Join Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { apiUrl, getAuthToken, initAuthGuard } from '../../js/auth.js';
+
+        window.heloraMeetingRequest = async (path, body, roles) => {
+            const user = await initAuthGuard(roles);
+            if (!user) throw new Error('Authenticated Helora access is required.');
+            const token = await getAuthToken();
+            const response = await fetch(apiUrl(path), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(body),
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload.success) throw new Error(payload.error?.message || payload.error || 'Meeting request failed.');
+            return payload;
+        };
+    </script>
+    <script>
+        // Mock Video
+        function startCamera() {
+            const video = document.getElementById('local-video');
+            const status = document.getElementById('camera-status');
+            if (navigator.mediaDevices?.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                    })
+                    .catch(function () {
+                        status.textContent = 'Camera access was denied or is unavailable.';
+                    });
+            } else {
+                status.textContent = 'Camera access is unavailable in this browser.';
+            }
+        }
+
+        // Logic
+        function showCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); }
+        function closeModals() {
+            document.getElementById('create-modal').classList.add('hidden');
+            document.getElementById('join-modal').classList.add('hidden');
+        }
+
+        function showJoinModal() {
+            const code = document.getElementById('join-code').value;
+            if (!code) { alert("Please enter a code"); return; }
+            document.getElementById('join-room-title').innerText = "Join " + code;
+            document.getElementById('join-modal').classList.remove('hidden');
+        }
+
+        async function createMeeting() {
+            const roomId = document.getElementById('new-room-id').value;
+            const pass = document.getElementById('new-room-pass').value;
+            try {
+                const res = await window.heloraMeetingRequest('/api/meetings', { room_id: roomId, password: pass }, ['doctor', 'super_admin']);
+                enterMeeting(roomId, res.data.host_name);
+            } catch (error) {
+                alert(error.message || 'Unable to create meeting.');
+            }
+        }
+
+        async function joinMeeting() {
+            const roomId = document.getElementById('join-code').value;
+            const pass = document.getElementById('join-room-pass').value;
+            try {
+                const res = await window.heloraMeetingRequest(`/api/meetings/${encodeURIComponent(roomId)}/join`, { password: pass }, ['patient', 'doctor', 'super_admin']);
+                enterMeeting(roomId, res.data.host_name);
+            } catch (error) {
+                alert(error.message || 'Unable to join meeting.');
+            }
+        }
+
+        function enterMeeting(roomId, remoteName) {
+            closeModals();
+            document.getElementById('landing-nav').classList.add('hidden');
+            document.getElementById('join-screen').classList.add('hidden');
+            document.getElementById('meeting-room').style.display = 'flex';
+            document.getElementById('meeting-code-display').innerText = roomId;
+
+            document.getElementById('remote-label').innerText = remoteName || "Doctor";
+
+            startCamera();
+        }
+
+        function leaveMeeting() {
+            location.reload();
+        }
+
+        function toggleMic() {
+            const btn = document.getElementById('btn-mic');
+            btn.classList.toggle('red');
+            const icon = btn.querySelector('ion-icon');
+            icon.name = icon.name === 'mic-outline' ? 'mic-off-outline' : 'mic-outline';
+        }
+
+        function toggleCam() {
+            const btn = document.getElementById('btn-cam');
+            btn.classList.toggle('red');
+            const icon = btn.querySelector('ion-icon');
+            icon.name = icon.name === 'videocam-outline' ? 'videocam-off-outline' : 'videocam-outline';
+        }
+    </script>
+</body>
+
+</html>
