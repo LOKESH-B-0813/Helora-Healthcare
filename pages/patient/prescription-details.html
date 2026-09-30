@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Details - Helora Patient</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/patient-portal.css">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-img">
+                        <img src="../../assets/logo.png" alt="Logo"
+                            style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <span>Helora Patient</span>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html" data-back-link>Dashboard</a>
+                    <a href="prescriptions.html" data-back-link>Prescriptions</a>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="btn btn-outline" id="logout-btn" type="button">Logout</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem 0;">
+        <div class="patient-back-row">
+            <a class="btn btn-outline" data-back-link href="prescriptions.html">← Back to Prescriptions</a>
+        </div>
+        <div id="demo-banner" class="demo-banner" hidden>
+            <strong>Demonstration mode - test data only.</strong>
+            This labelled [TEST-DATA] prescription belongs to a fictional demo patient.
+        </div>
+        <p id="page-error" class="page-error" hidden></p>
+
+        <h1>Prescription Details</h1>
+        <div id="detail" class="detail-grid"><p class="record-muted">Loading...</p></div>
+    </main>
+
+    <script type="module">
+        import { findAppointment, findPrescription } from '../../js/patient-portal-data.js';
+        import {
+            appendField, bindLogout, formatDate, hideError,
+            requirePatientDataset, showError, withDemo,
+        } from '../../js/patient-portal.js';
+
+        async function load() {
+            hideError('page-error');
+            const loaded = await requirePatientDataset();
+            if (!loaded) return;
+            const { dataset } = loaded;
+            const id = new URLSearchParams(window.location.search).get('id');
+            const found = id ? findPrescription(dataset, id) : null;
+
+            const container = document.getElementById('detail');
+            container.replaceChildren();
+            if (!found) {
+                const empty = document.createElement('p');
+                empty.className = 'record-muted';
+                empty.textContent = 'Prescription not found. It may have been removed or the link is invalid.';
+                container.appendChild(empty);
+                return;
+            }
+            const { prescription: row, items } = found;
+
+            const card = document.createElement('article');
+            card.className = 'record-item';
+            appendField(card, 'Prescription ID', row.$id);
+            appendField(card, 'Doctor', row.doctor_name || row.doctor_id);
+            appendField(card, 'Date', formatDate(row.created_at || row.prescribed_at));
+            appendField(card, 'Diagnosis', row.diagnosis);
+            appendField(card, 'Instructions', row.instructions);
+            appendField(card, 'Status', row.status);
+            container.appendChild(card);
+
+            const medsCard = document.createElement('article');
+            medsCard.className = 'record-item';
+            const heading = document.createElement('h3');
+            heading.textContent = `Medicines (${items.length})`;
+            medsCard.appendChild(heading);
+            if (!items.length) {
+                const empty = document.createElement('p');
+                empty.className = 'record-muted';
+                empty.textContent = 'No medicine details available.';
+                medsCard.appendChild(empty);
+            }
+            items.forEach((medicine) => {
+                appendField(
+                    medsCard,
+                    'Medicine',
+                    `${medicine.medicine_name || '-'} | ${medicine.dosage || '-'} | ${medicine.frequency || '-'} | ${medicine.duration || '-'}`,
+                );
+            });
+            container.appendChild(medsCard);
+
+            if (row.appointment_id) {
+                const appt = findAppointment(dataset, row.appointment_id);
+                if (appt) {
+                    const relatedCard = document.createElement('article');
+                    relatedCard.className = 'record-item';
+                    const relatedHeading = document.createElement('h3');
+                    relatedHeading.textContent = 'Related appointment';
+                    relatedCard.appendChild(relatedHeading);
+                    appendField(relatedCard, 'Date', `${formatDate(appt.appointment_date)}${appt.appointment_time ? ` · ${appt.appointment_time}` : ''}`);
+                    const link = document.createElement('a');
+                    link.className = 'btn btn-outline';
+                    link.textContent = `View appointment ${appt.$id}`;
+                    link.setAttribute('href', withDemo(`appointment-details.html?id=${encodeURIComponent(appt.$id)}`));
+                    relatedCard.appendChild(link);
+                    container.appendChild(relatedCard);
+                }
+            }
+        }
+
+        bindLogout();
+        load().catch((error) => {
+            console.error(error);
+            showError('page-error', error.message || 'Unable to load this prescription.');
+        });
+    </script>
+</body>
+
+</html>
